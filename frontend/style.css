@@ -1,0 +1,147 @@
+:root {
+  --primary: #2b6cb0;
+  --primary-dark: #1a4971;
+  --text: #1a202c;
+  --muted: #718096;
+  --border: #e2e8f0;
+  --bg: #f7fafc;
+  --low: #38a169;
+  --moderate: #d69e2e;
+  --high: #e53e3e;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  margin: 0;
+  padding: 24px 16px;
+}
+
+.container {
+  max-width: 720px;
+  margin: 0 auto;
+  background: white;
+  border-radius: 12px;
+  padding: 32px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+header h1 {
+  margin-bottom: 4px;
+}
+
+.subtitle {
+  color: var(--muted);
+  margin-top: 0;
+}
+
+.form-section {
+  margin-bottom: 28px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--border);
+}
+
+.form-section h2 {
+  font-size: 18px;
+  margin-bottom: 12px;
+}
+
+.hint {
+  color: var(--muted);
+  font-size: 13px;
+  margin-top: -8px;
+}
+
+label {
+  display: block;
+  margin-bottom: 12px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+input, select {
+  display: block;
+  width: 100%;
+  padding: 8px 10px;
+  margin-top: 4px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0 16px;
+}
+
+button {
+  background: var(--primary);
+  color: white;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 6px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  width: 100%;
+}
+
+button:hover {
+  background: var(--primary-dark);
+}
+
+.result {
+  margin-top: 24px;
+  padding: 20px;
+  border-radius: 8px;
+  background: var(--bg);
+}
+
+.risk-level {
+  font-size: 22px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.risk-level.low { color: var(--low); }
+.risk-level.moderate { color: var(--moderate); }
+.risk-level.high { color: var(--high); }
+
+.disclaimer {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.hidden {
+  display: none;
+}
+
+label.checkbox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 400;
+}
+
+label.checkbox input {
+  width: auto;
+  margin-top: 0;
+}
+
+#appointment-form-section {
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border);
+}
+
+@media (max-width: 480px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}

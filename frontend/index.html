@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CKD Risk Screening</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>CKD Risk Screening</h1>
+      <p class="subtitle">A preliminary screening tool. This does not diagnose CKD.</p>
+    </header>
+
+    <form id="assessment-form">
+      <div class="form-section">
+        <h2>Basic info</h2>
+        <label>Name
+          <input type="text" name="name" required>
+        </label>
+        <label>Email
+          <input type="email" name="email" required>
+        </label>
+        <div class="grid">
+          <label>Age
+            <input type="number" name="age" min="0" max="120">
+          </label>
+          <label>Sex
+            <select name="sex">
+              <option value="">Prefer not to say</option>
+              <option value="male">Male</option>
+              <option value="female">Female</option>
+              <option value="other">Other</option>
+            </select>
+          </label>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <h2>Vital signs</h2>
+        <div class="grid">
+          <label>Blood pressure (e.g. 120/80)
+            <input type="text" name="bp" pattern="[0-9]{2,3}/[0-9]{2,3}" placeholder="120/80">
+          </label>
+          <label>Weight (kg)
+            <input type="number" name="weight" step="0.1">
+          </label>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <h2>Symptoms</h2>
+        <label class="checkbox"><input type="checkbox" name="swelling"> Swelling (feet, ankles, hands, or face)</label>
+        <label class="checkbox"><input type="checkbox" name="fatigue"> Fatigue or low energy</label>
+        <label class="checkbox"><input type="checkbox" name="urination_changes"> Changes in urination (frequency, color, foam)</label>
+        <label class="checkbox"><input type="checkbox" name="nausea"> Nausea or loss of appetite</label>
+        <label class="checkbox"><input type="checkbox" name="other_symptoms"> Other symptoms</label>
+        <label>Describe other symptoms (optional)
+          <input type="text" name="other_symptoms_note">
+        </label>
+      </div>
+
+      <div class="form-section">
+        <h2>Medical history</h2>
+        <label class="checkbox"><input type="checkbox" name="hypertension"> Hypertension (high blood pressure)</label>
+        <label class="checkbox"><input type="checkbox" name="diabetes"> Diabetes</label>
+        <label class="checkbox"><input type="checkbox" name="previous_kidney_problems"> Previous kidney problems</label>
+        <label class="checkbox"><input type="checkbox" name="other_conditions"> Other relevant conditions</label>
+        <label>Describe other conditions (optional)
+          <input type="text" name="other_conditions_note">
+        </label>
+      </div>
+
+      <div class="form-section">
+        <h2>Family history</h2>
+        <label class="checkbox"><input type="checkbox" name="family_history_kidney_disease"> Family history of kidney disease</label>
+      </div>
+
+      <div class="form-section">
+        <h2>Lifestyle and risk factors</h2>
+        <label class="checkbox"><input type="checkbox" name="smoking"> Smoking</label>
+        <label class="checkbox"><input type="checkbox" name="alcohol_use"> Regular alcohol use</label>
+        <label class="checkbox"><input type="checkbox" name="poor_diet"> Poor diet (high sodium, processed foods)</label>
+        <label class="checkbox"><input type="checkbox" name="low_physical_activity"> Low physical activity</label>
+        <label class="checkbox"><input type="checkbox" name="medication_use"> Regular use of pain relievers or other medications</label>
+        <label>Which medications (optional)
+          <input type="text" name="medication_use_note">
+        </label>
+      </div>
+
+      <div class="form-section">
+        <h2>Optional laboratory results</h2>
+        <p class="hint">Leave blank if you don't have these. The tool still works without them.</p>
+        <div class="grid">
+          <label>Serum creatinine
+            <input type="number" name="serum_creatinine" step="0.01">
+          </label>
+          <label>BUN (blood urea nitrogen)
+            <input type="number" name="bun" step="0.1">
+          </label>
+          <label>Blood glucose
+            <input type="number" name="blood_glucose" step="0.1">
+          </label>
+          <label class="checkbox"><input type="checkbox" name="urine_protein_albumin"> Protein or albumin detected in urine test</label>
+        </div>
+      </div>
+
+      <button type="submit">Get my risk assessment</button>
+    </form>
+
+    <section id="result" class="result hidden">
+      <h2>Your result</h2>
+      <p id="risk-level" class="risk-level"></p>
+      <p id="probability"></p>
+      <p class="disclaimer" id="disclaimer"></p>
+      <button id="request-appointment-btn" class="hidden">Request an appointment</button>
+    </section>
+
+    <section id="appointment-form-section" class="hidden">
+      <h2>Request an appointment</h2>
+      <form id="appointment-form">
+        <label>Phone
+          <input type="tel" name="phone">
+        </label>
+        <label>Preferred provider or clinic (optional)
+          <input type="text" name="preferred_provider">
+        </label>
+        <button type="submit">Submit request</button>
+      </form>
+      <p id="appointment-status"></p>
+    </section>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
