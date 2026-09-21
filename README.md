@@ -105,3 +105,15 @@ Update `API_BASE` in `script.js` to match your backend URL once deployed.
 This is a screening tool, not a diagnostic device. Validate the model against
 clinical guidance before using it with real users, and always direct
 moderate/high risk users to a licensed healthcare professional.
+
+## Limitations
+
+This is a functional prototype, not a clinically validated tool. Known limitations:
+
+- **Training data size**: the ML model is trained on the UCI Chronic Kidney Disease dataset (Rubini, L., Soundarapandian, P., and Eswaran, P., 2015), which has only 400 patient records. This is small by clinical ML standards and limits how well the model generalizes.
+- **Unvalidated rule weights**: the rule-based scoring (symptoms, family history, lifestyle) in `backend/model/risk_rules.py` uses point values based on general CKD risk factor knowledge, not weights derived from or tested against real patient outcome data.
+- **No clinical validation**: the combined risk score has not been validated against real diagnoses. It has not been reviewed by a nephrologist or other clinician.
+- **Fields collected but not scored**: blood type, last checkup date, and last meal eaten are captured for context but do not currently affect the risk calculation. Blood type has no established link to CKD risk. Last meal is only relevant for interpreting a fasting glucose result, which this tool does not distinguish from a non-fasting one.
+- **Small feature overlap**: only some self-reported fields (blood pressure, hypertension, diabetes, swelling, and optional lab values) map onto the ML model's trained features. Most of the model's other input columns are filled in with dataset medians when not provided by the user, which reduces the model's precision for any individual user.
+
+Before any real-world use, this tool would need validation against a larger, outcome-labeled dataset and clinical review of the scoring criteria.
