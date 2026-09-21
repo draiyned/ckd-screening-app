@@ -1,4 +1,4 @@
-const API_BASE = "http://localhost:8000/api"; // change to your deployed Render URL
+const API_BASE = "https://ckd-screening-app.vercel.app/api"; // change to your deployed Render URL
 
 const assessmentForm = document.getElementById("assessment-form");
 const resultSection = document.getElementById("result");
