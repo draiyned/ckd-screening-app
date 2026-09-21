@@ -145,3 +145,8 @@ label.checkbox input {
     grid-template-columns: 1fr;
   }
 }
+
+.intervention {
+  font-weight: 600;
+  margin-top: 8px;
+}

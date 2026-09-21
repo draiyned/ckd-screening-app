@@ -1,9 +1,10 @@
-const API_BASE = "https://ckd-screening-app.vercel.app/api"; // change to your deployed Render URL
+const API_BASE = "https://ckd-screening-app.vercel.app/api";
 
 const assessmentForm = document.getElementById("assessment-form");
 const resultSection = document.getElementById("result");
 const riskLevelEl = document.getElementById("risk-level");
 const probabilityEl = document.getElementById("probability");
+const interventionEl = document.getElementById("intervention");
 const disclaimerEl = document.getElementById("disclaimer");
 const requestApptBtn = document.getElementById("request-appointment-btn");
 const apptFormSection = document.getElementById("appointment-form-section");
@@ -77,6 +78,7 @@ assessmentForm.addEventListener("submit", async (e) => {
     riskLevelEl.textContent = data.risk_level;
     riskLevelEl.className = `risk-level ${data.risk_level}`;
     probabilityEl.textContent = `Combined risk score: ${(data.combined_score * 100).toFixed(1)}%`;
+    interventionEl.textContent = data.suggested_intervention || "";
     disclaimerEl.textContent = data.disclaimer;
 
     resultSection.classList.remove("hidden");
