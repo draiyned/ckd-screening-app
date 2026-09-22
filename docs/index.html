@@ -93,12 +93,18 @@
 
       <div class="form-section">
         <h2>Family history</h2>
-        <label class="checkbox"><input type="checkbox" name="family_history_kidney_disease"> Family history of kidney disease</label>
+        <label class="checkbox"><input type="checkbox" name="family_history_kidney_disease"> Any close family member (parent, sibling, grandparent) with kidney problems, kidney failure, or dialysis</label>
       </div>
 
       <div class="form-section">
         <h2>Lifestyle and risk factors</h2>
-        <label class="checkbox"><input type="checkbox" name="smoking"> Smoking</label>
+        <label>Smoking status
+          <select name="smoking_status">
+            <option value="never">Never smoked</option>
+            <option value="former">Former smoker</option>
+            <option value="current">Current smoker</option>
+          </select>
+        </label>
         <label class="checkbox"><input type="checkbox" name="alcohol_use"> Regular alcohol use</label>
         <label class="checkbox"><input type="checkbox" name="poor_diet"> Poor diet (high sodium, processed foods)</label>
         <label class="checkbox"><input type="checkbox" name="low_physical_activity"> Low physical activity</label>
@@ -121,8 +127,12 @@
           <label>Blood glucose
             <input type="number" name="blood_glucose" step="0.1">
           </label>
+          <label>eGFR (mL/min/1.73m²)
+            <input type="number" name="egfr" step="0.1">
+          </label>
           <label class="checkbox"><input type="checkbox" name="urine_protein_albumin"> Protein or albumin detected in urine test</label>
         </div>
+        <p class="hint">eGFR normal range: 90 or above. Below 60 may indicate kidney disease.</p>
       </div>
 
       <button type="submit">Get my risk assessment</button>

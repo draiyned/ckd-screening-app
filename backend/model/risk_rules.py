@@ -1,13 +1,3 @@
-"""
-Rule-based risk scoring for factors the UCI-trained model has no data for:
-symptoms, family history, and lifestyle factors.
-
-This produces a supplementary risk score (0-1) that gets combined with the
-ML model's probability in combined_risk.py. Weights here are a starting
-point based on general CKD risk factor guidance, not a validated clinical
-scoring system. Have a clinician review these before real use.
-"""
-
 def score_symptoms(data):
     score = 0.0
     weights = {
@@ -42,8 +32,11 @@ def score_family_history(data):
 
 def score_lifestyle(data):
     score = 0.0
-    if data.get("smoking"):
-        score += 0.08
+    smoking_status = data.get("smoking_status")
+    if smoking_status == "current":
+        score += 0.12
+    elif smoking_status == "former":
+        score += 0.05
     if data.get("alcohol_use"):
         score += 0.05
     if data.get("low_physical_activity"):
@@ -72,14 +65,17 @@ def score_vitals(data):
     if age is not None and age >= 60:
         score += 0.1
 
+    egfr = data.get("egfr")
+    if egfr is not None:
+        if egfr < 60:
+            score += 0.25
+        elif egfr < 90:
+            score += 0.1
+
     return score
 
 
 def rule_based_score(data):
-    """
-    data: dict with the user-facing field names from the assessment form.
-    Returns a 0-1 score. Capped at 1.0.
-    """
     total = (
         score_symptoms(data)
         + score_medical_history(data)

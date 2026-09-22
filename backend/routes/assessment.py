@@ -1,9 +1,3 @@
-"""
-Assessment endpoint: takes user symptom/health inputs, runs the combined
-risk assessment (ML model + rule-based scoring), stores the result, and
-returns the risk level plus a suggested next step.
-"""
-
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from typing import Optional
@@ -48,7 +42,7 @@ class AssessmentInput(BaseModel):
 
     family_history_kidney_disease: Optional[bool] = None
 
-    smoking: Optional[bool] = None
+    smoking_status: Optional[str] = None
     alcohol_use: Optional[bool] = None
     poor_diet: Optional[bool] = None
     low_physical_activity: Optional[bool] = None
@@ -59,6 +53,7 @@ class AssessmentInput(BaseModel):
     bun: Optional[float] = None
     urine_protein_albumin: Optional[bool] = None
     blood_glucose: Optional[float] = None
+    egfr: Optional[float] = None
 
 
 @router.post("/assessment")

@@ -15,12 +15,12 @@ let lastAssessmentId = null;
 let lastName = "";
 let lastEmail = "";
 
-const NUMERIC_FIELDS = ["age", "weight", "serum_creatinine", "bun", "blood_glucose"];
+const NUMERIC_FIELDS = ["age", "weight", "serum_creatinine", "bun", "blood_glucose", "egfr"];
 const CHECKBOX_FIELDS = [
   "swelling", "fatigue", "urination_changes", "nausea", "other_symptoms",
   "hypertension", "diabetes", "previous_kidney_problems", "other_conditions",
   "family_history_kidney_disease",
-  "smoking", "alcohol_use", "poor_diet", "low_physical_activity", "medication_use",
+  "alcohol_use", "poor_diet", "low_physical_activity", "medication_use",
   "urine_protein_albumin",
 ];
 
