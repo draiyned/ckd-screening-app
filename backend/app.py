@@ -13,7 +13,7 @@ Endpoints:
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from routes import assessment, appointments
+from routes import assessment, appointments, chat
 
 app = FastAPI(
     title="CKD Screening API",
@@ -30,6 +30,7 @@ app.add_middleware(
 
 app.include_router(assessment.router, prefix="/api")
 app.include_router(appointments.router, prefix="/api")
+pi")/a app.include_router(chat.router, prefix="/api")
 
 
 @app.get("/")
