@@ -162,6 +162,13 @@ def chat(req: ChatRequest):
     try:
         reply = resp.json()["choices"][0]["message"]["content"].strip()
     except (KeyError, IndexError, ValueError, TypeError, AttributeError):
-        raise HTTPException(status_code=502, detail="Unexpected reply from the chat service.")
+        print("chat unexpected reply", resp.status_code, resp.text[:500])
+        raise HTTPException(
+            status_code=502,
+            detail="Unexpected reply from the chat service. Got: " + resp.text[:200],
+        )
+
+    if not reply:
+        raise HTTPException(status_code=502, detail="The chat service sent an empty reply.")
 
     return {"reply": reply}
