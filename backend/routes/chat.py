@@ -81,9 +81,6 @@ def provider_headers(api_key, url):
         "Content-Type": "application/json",
         "Accept": "application/json",
     }
-    if "models.github.ai" in url:
-        headers["Accept"] = "application/vnd.github+json"
-        headers["X-GitHub-Api-Version"] = "2022-11-28"
     return headers
 
 
@@ -100,8 +97,8 @@ def chat_status():
 
     payload = {
         "model": model,
-        "messages": [{"role": "user", "content": "Reply with the word OK."}],
-        "max_tokens": 5,
+        "messages": [{"role": "user", "content": "In one short sentence, what is eGFR?"}],
+        "max_tokens": 60,
     }
     try:
         resp = httpx.post(url, headers=provider_headers(api_key, url), json=payload, timeout=20.0)
@@ -110,6 +107,8 @@ def chat_status():
         return info
 
     info["provider_status"] = resp.status_code
+    info["content_type"] = resp.headers.get("content-type", "")
+    info["body_preview"] = resp.text[:300]
     if resp.status_code >= 400:
         info["provider_message"] = resp.text[:300]
         info["problem"] = "The model service refused the request. Read provider_message."
