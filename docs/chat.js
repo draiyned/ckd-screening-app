@@ -125,10 +125,15 @@
 
       if (!res.ok) {
         history.pop();
+        let detail = "";
+        try {
+          const err = await res.json();
+          detail = typeof err.detail === "string" ? err.detail : JSON.stringify(err.detail);
+        } catch (e2) {}
         const msg =
           res.status === 429
             ? "The chat is busy. Try again in a minute."
-            : "The chat is not available right now. Try again later.";
+            : "The chat is not available right now. Try again later. (Error " + res.status + (detail ? ": " + detail.slice(0, 200) : "") + ")";
         addMsg("note", msg);
         return;
       }
