@@ -75,6 +75,49 @@ def build_system_prompt(risk_level, risk_score):
     return prompt
 
 
+def provider_headers(api_key, url):
+    headers = {
+        "Authorization": f"Bearer {api_key}",
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+    }
+    if "models.github.ai" in url:
+        headers["Accept"] = "application/vnd.github+json"
+        headers["X-GitHub-Api-Version"] = "2022-11-28"
+    return headers
+
+
+@router.get("/chat/status")
+def chat_status():
+    """Open this page in a browser to see why the chat fails. It never shows the token."""
+    api_key = os.environ.get("CHAT_API_KEY")
+    url = os.environ.get("CHAT_API_URL", DEFAULT_URL)
+    model = os.environ.get("CHAT_MODEL", DEFAULT_MODEL)
+    info = {"key_set": bool(api_key), "model": model, "url": url}
+    if not api_key:
+        info["problem"] = "CHAT_API_KEY is empty or missing. Add it in Vercel, then redeploy."
+        return info
+
+    payload = {
+        "model": model,
+        "messages": [{"role": "user", "content": "Reply with the word OK."}],
+        "max_tokens": 5,
+    }
+    try:
+        resp = httpx.post(url, headers=provider_headers(api_key, url), json=payload, timeout=20.0)
+    except httpx.HTTPError as e:
+        info["problem"] = "Could not reach the model service: " + type(e).__name__
+        return info
+
+    info["provider_status"] = resp.status_code
+    if resp.status_code >= 400:
+        info["provider_message"] = resp.text[:300]
+        info["problem"] = "The model service refused the request. Read provider_message."
+    else:
+        info["result"] = "Working"
+    return info
+
+
 @router.post("/chat")
 def chat(req: ChatRequest):
     api_key = os.environ.get("CHAT_API_KEY")
@@ -92,15 +135,7 @@ def chat(req: ChatRequest):
 
     url = os.environ.get("CHAT_API_URL", DEFAULT_URL)
     model = os.environ.get("CHAT_MODEL", DEFAULT_MODEL)
-
-    headers = {
-        "Authorization": f"Bearer {api_key}",
-        "Content-Type": "application/json",
-        "Accept": "application/json",
-    }
-    if "models.github.ai" in url:
-        headers["Accept"] = "application/vnd.github+json"
-        headers["X-GitHub-Api-Version"] = "2022-11-28"
+    headers = provider_headers(api_key, url)
 
     payload = {
         "model": model,
