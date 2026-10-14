@@ -4,27 +4,105 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>CKD Risk Screening</title>
-<link rel="stylesheet" href="style.css">
+<meta name="description" content="A preliminary chronic kidney disease (CKD) risk screening tool. It does not diagnose CKD.">
+<link rel="stylesheet" href="style.css?v=3">
 </head>
 <body>
-  <div class="container">
-    <header>
-      <h1>CKD Risk Screening</h1>
-      <p class="subtitle">A preliminary screening tool. This does not diagnose CKD.</p>
-    </header>
 
-    <form id="assessment-form">
+<!-- Icon sprite -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="i-home" viewBox="0 0 24 24"><path d="M3 11l9-8 9 8v10a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></symbol>
+    <symbol id="i-dashboard" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></symbol>
+    <symbol id="i-monitoring" viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></symbol>
+    <symbol id="i-forecasting" viewBox="0 0 24 24"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></symbol>
+    <symbol id="i-referral" viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><polyline points="14 3 14 8 19 8"/><path d="M9 14h6M9 17h4"/></symbol>
+    <symbol id="i-centers" viewBox="0 0 24 24"><path d="M3 21V7l9-4 9 4v14"/><path d="M12 9v6M9 12h6"/><path d="M3 21h18"/></symbol>
+    <symbol id="i-about" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></symbol>
+    <symbol id="i-drop" viewBox="0 0 24 24"><path d="M12 3s6 6.5 6 11a6 6 0 0 1-12 0c0-4.5 6-11 6-11z"/></symbol>
+  </defs>
+</svg>
+
+<!-- Mobile top bar -->
+<header class="topbar">
+  <button class="menu-btn" id="menu-btn" type="button" aria-label="Open menu" aria-expanded="false">
+    <span></span><span></span><span></span>
+  </button>
+  <a class="brand" href="#home">
+    <span class="brand-mark"><svg class="ico"><use href="#i-drop"/></svg></span>
+    <span class="brand-text">CKD Screening</span>
+  </a>
+</header>
+<div class="scrim" id="scrim"></div>
+
+<!-- Sidebar -->
+<aside class="sidebar" id="sidebar">
+  <a class="brand brand-side" href="#home">
+    <span class="brand-mark"><svg class="ico"><use href="#i-drop"/></svg></span>
+    <span class="brand-text">CKD Screening<small>Preliminary risk check</small></span>
+  </a>
+
+  <nav class="nav" aria-label="Main">
+    <button class="nav-btn" data-tab="home" type="button"><svg class="ico"><use href="#i-home"/></svg><span>Home</span></button>
+    <button class="nav-btn" data-tab="dashboard" type="button"><svg class="ico"><use href="#i-dashboard"/></svg><span>Dashboard</span></button>
+    <button class="nav-btn" data-tab="monitoring" type="button"><svg class="ico"><use href="#i-monitoring"/></svg><span>Monitoring</span></button>
+    <button class="nav-btn" data-tab="forecasting" type="button"><svg class="ico"><use href="#i-forecasting"/></svg><span>Forecasting</span></button>
+    <button class="nav-btn" data-tab="referral" type="button"><svg class="ico"><use href="#i-referral"/></svg><span>Referral</span></button>
+    <button class="nav-btn" data-tab="centers" type="button"><svg class="ico"><use href="#i-centers"/></svg><span>Dialysis Centers</span></button>
+    <button class="nav-btn" data-tab="about" type="button"><svg class="ico"><use href="#i-about"/></svg><span>About Us</span></button>
+  </nav>
+
+  <div class="side-foot">
+    <span class="dot"></span>
+    <span>Screening aid only.<br>Not a diagnosis.</span>
+  </div>
+</aside>
+
+<main class="main">
+
+<!-- ============ HOME ============ -->
+<section id="tab-home" class="tab-section">
+  <div class="hero">
+    <div class="hero-glow" aria-hidden="true"></div>
+    <p class="eyebrow">Preliminary CKD risk screening</p>
+    <h1>Check your kidney risk early.</h1>
+    <p class="hero-sub">Answer a few health questions. Get a low, moderate, or high risk result with a percentage and a clear next step. Kidney disease often has no early symptoms, so a quick check helps.</p>
+    <div class="hero-actions">
+      <button class="btn btn-light" type="button" id="hero-start">Start screening</button>
+      <button class="btn btn-ghost" type="button" id="hero-chat">Ask the assistant</button>
+    </div>
+    <ul class="hero-facts">
+      <li><strong>3</strong><span>risk levels</span></li>
+      <li><strong>20+</strong><span>factors checked</span></li>
+      <li><strong>~5 min</strong><span>to finish</span></li>
+      <li><strong>No</strong><span>diagnosis given</span></li>
+    </ul>
+  </div>
+
+  <div class="steps">
+    <article class="card step"><span class="step-n">1</span><h3>Share your health info</h3><p>Age, blood pressure, symptoms, history, and any lab results you have. Lab results are optional.</p></article>
+    <article class="card step"><span class="step-n">2</span><h3>Get your risk level</h3><p>A trained model and a rule-based score combine into a low, moderate, or high result.</p></article>
+    <article class="card step"><span class="step-n">3</span><h3>Act on it</h3><p>Moderate or high risk? Request an appointment, get a referral summary, and find a center.</p></article>
+  </div>
+
+  <div id="screening" class="card form-card">
+    <div class="card-head">
+      <h2>Risk screening form</h2>
+      <p class="muted">A preliminary screening tool. This does not diagnose CKD.</p>
+    </div>
+
+    <form id="assessment-form" novalidate>
       <div class="form-section">
-        <h2>Basic info</h2>
+        <h3>Basic info</h3>
         <label>Name
-          <input type="text" name="name" required>
+          <input type="text" name="name" required autocomplete="name">
         </label>
         <label>Email
-          <input type="email" name="email" required>
+          <input type="email" name="email" required autocomplete="email">
         </label>
         <div class="grid">
           <label>Age
-            <input type="number" name="age" min="0" max="120">
+            <input type="number" name="age" min="0" max="120" inputmode="numeric">
           </label>
           <label>Sex
             <select name="sex">
@@ -54,13 +132,13 @@
       </div>
 
       <div class="form-section">
-        <h2>Vital signs</h2>
+        <h3>Vital signs</h3>
         <div class="grid">
           <label>Blood pressure (e.g. 120/80)
-            <input type="text" name="bp" pattern="[0-9]{2,3}/[0-9]{2,3}" placeholder="120/80">
+            <input type="text" name="bp" pattern="[0-9]{2,3}/[0-9]{2,3}" placeholder="120/80" inputmode="text">
           </label>
           <label>Weight (kg)
-            <input type="number" name="weight" step="0.1">
+            <input type="number" name="weight" step="0.1" inputmode="decimal">
           </label>
           <label>Last meal eaten
             <input type="text" name="last_meal" placeholder="e.g. rice and fried chicken">
@@ -69,7 +147,7 @@
       </div>
 
       <div class="form-section">
-        <h2>Symptoms</h2>
+        <h3>Symptoms</h3>
         <label class="checkbox"><input type="checkbox" name="swelling"> Swelling (feet, ankles, hands, or face)</label>
         <label class="checkbox"><input type="checkbox" name="fatigue"> Fatigue or low energy</label>
         <label class="checkbox"><input type="checkbox" name="urination_changes"> Changes in urination (frequency, color, foam)</label>
@@ -81,7 +159,7 @@
       </div>
 
       <div class="form-section">
-        <h2>Medical history</h2>
+        <h3>Medical history</h3>
         <label class="checkbox"><input type="checkbox" name="hypertension"> Hypertension (high blood pressure)</label>
         <label class="checkbox"><input type="checkbox" name="diabetes"> Diabetes</label>
         <label class="checkbox"><input type="checkbox" name="previous_kidney_problems"> Previous kidney problems</label>
@@ -92,12 +170,12 @@
       </div>
 
       <div class="form-section">
-        <h2>Family history</h2>
+        <h3>Family history</h3>
         <label class="checkbox"><input type="checkbox" name="family_history_kidney_disease"> Any close family member (parent, sibling, grandparent) with kidney problems, kidney failure, or dialysis</label>
       </div>
 
       <div class="form-section">
-        <h2>Lifestyle and risk factors</h2>
+        <h3>Lifestyle and risk factors</h3>
         <label>Smoking status
           <select name="smoking_status">
             <option value="never">Never smoked</option>
@@ -115,54 +193,402 @@
       </div>
 
       <div class="form-section">
-        <h2>Optional laboratory results</h2>
+        <h3>Optional laboratory results</h3>
         <p class="hint">Leave blank if you don't have these. The tool still works without them.</p>
         <div class="grid">
           <label>Serum creatinine
-            <input type="number" name="serum_creatinine" step="0.01">
+            <input type="number" name="serum_creatinine" step="0.01" inputmode="decimal">
           </label>
           <label>BUN (blood urea nitrogen)
-            <input type="number" name="bun" step="0.1">
+            <input type="number" name="bun" step="0.1" inputmode="decimal">
           </label>
           <label>Blood glucose
-            <input type="number" name="blood_glucose" step="0.1">
+            <input type="number" name="blood_glucose" step="0.1" inputmode="decimal">
           </label>
           <label>eGFR (mL/min/1.73m²)
-            <input type="number" name="egfr" step="0.1">
+            <input type="number" name="egfr" step="0.1" inputmode="decimal">
           </label>
-          <label class="checkbox"><input type="checkbox" name="urine_protein_albumin"> Protein or albumin detected in urine test</label>
         </div>
+        <label class="checkbox"><input type="checkbox" name="urine_protein_albumin"> Protein or albumin detected in urine test</label>
         <p class="hint">eGFR normal range: 90 or above. Below 60 may indicate kidney disease.</p>
       </div>
 
-      <button type="submit">Get my risk assessment</button>
+      <p id="form-error" class="form-error hidden" role="alert"></p>
+      <button type="submit" class="btn btn-primary btn-block" id="submit-btn">Get my risk assessment</button>
     </form>
-
-    <section id="result" class="result hidden">
-      <h2>Your result</h2>
-      <p id="risk-level" class="risk-level"></p>
-      <p id="probability"></p>
-      <p id="intervention" class="intervention"></p>
-      <p class="disclaimer" id="disclaimer"></p>
-      <button id="request-appointment-btn" class="hidden">Request an appointment</button>
-    </section>
-
-    <section id="appointment-form-section" class="hidden">
-      <h2>Request an appointment</h2>
-      <form id="appointment-form">
-        <label>Phone
-          <input type="tel" name="phone">
-        </label>
-        <label>Preferred provider or clinic (optional)
-          <input type="text" name="preferred_provider">
-        </label>
-        <button type="submit">Submit request</button>
-      </form>
-      <p id="appointment-status"></p>
-    </section>
   </div>
 
-  <script src="script.js"></script>
-  <script src="chat.js?v=2"></script>
+  <section id="result" class="card result hidden" aria-live="polite">
+    <h2>Your result</h2>
+    <p id="risk-level" class="risk-level"></p>
+    <div class="meter" aria-hidden="true"><span id="meter-fill"></span></div>
+    <p id="probability" class="probability"></p>
+    <p id="intervention" class="intervention"></p>
+    <p class="disclaimer" id="disclaimer"></p>
+    <div class="result-actions">
+      <button id="request-appointment-btn" class="btn btn-primary hidden" type="button">Request an appointment</button>
+      <button class="btn btn-outline" type="button" data-go="monitoring">Track my readings</button>
+      <button class="btn btn-outline hidden" type="button" data-go="referral" id="go-referral">Referral guide</button>
+    </div>
+  </section>
+
+  <section id="appointment-form-section" class="card hidden">
+    <h2>Request an appointment</h2>
+    <form id="appointment-form">
+      <label>Phone
+        <input type="tel" name="phone" inputmode="tel">
+      </label>
+      <label>Preferred provider or clinic (optional)
+        <input type="text" name="preferred_provider">
+      </label>
+      <button type="submit" class="btn btn-primary btn-block">Submit request</button>
+    </form>
+    <p id="appointment-status" class="status-line"></p>
+  </section>
+</section>
+
+<!-- ============ DASHBOARD ============ -->
+<section id="tab-dashboard" class="tab-section">
+  <div class="page-head">
+    <h1>Dashboard</h1>
+    <p>Anonymous totals from every screening done on this platform. No names or answers are shown.</p>
+  </div>
+
+  <div id="dash-state" class="notice hidden"></div>
+
+  <div class="stat-grid">
+    <article class="card stat"><span class="stat-label">Screenings</span><strong id="st-total">–</strong></article>
+    <article class="card stat s-low"><span class="stat-label">Low risk</span><strong id="st-low">–</strong></article>
+    <article class="card stat s-moderate"><span class="stat-label">Moderate risk</span><strong id="st-moderate">–</strong></article>
+    <article class="card stat s-high"><span class="stat-label">High risk</span><strong id="st-high">–</strong></article>
+    <article class="card stat"><span class="stat-label">Appointment requests</span><strong id="st-appts">–</strong></article>
+  </div>
+
+  <div class="two-col">
+    <article class="card">
+      <h2>Risk levels</h2>
+      <div id="chart-risk" class="bars"></div>
+    </article>
+    <article class="card">
+      <h2>Screenings per week</h2>
+      <p class="muted small">Last 8 weeks</p>
+      <div id="chart-weekly" class="chart"></div>
+    </article>
+  </div>
+
+  <article class="card">
+    <div class="row-between">
+      <h2>My screenings on this device</h2>
+      <button class="link-btn" type="button" id="clear-history">Clear</button>
+    </div>
+    <div id="my-history"></div>
+  </article>
+</section>
+
+<!-- ============ MONITORING ============ -->
+<section id="tab-monitoring" class="tab-section">
+  <div class="page-head">
+    <h1>Monitoring</h1>
+    <p>Keep a log of your blood pressure, weight, and kidney lab results. Bring it to your doctor.</p>
+  </div>
+
+  <div class="notice notice-info">Your log is saved only in this browser on this device. It is not sent to any server. Clearing your browser data erases it.</div>
+
+  <article class="card">
+    <h2>Add a reading</h2>
+    <form id="log-form" novalidate>
+      <div class="grid">
+        <label>Date
+          <input type="date" name="date" required>
+        </label>
+        <label>Blood pressure
+          <input type="text" name="bp" placeholder="120/80" pattern="[0-9]{2,3}/[0-9]{2,3}">
+        </label>
+        <label>Weight (kg)
+          <input type="number" name="weight" step="0.1" inputmode="decimal">
+        </label>
+        <label>eGFR (mL/min/1.73m²)
+          <input type="number" name="egfr" step="0.1" inputmode="decimal">
+        </label>
+        <label>Serum creatinine
+          <input type="number" name="creat" step="0.01" inputmode="decimal">
+        </label>
+        <label>Note (optional)
+          <input type="text" name="note" maxlength="80">
+        </label>
+      </div>
+      <p id="log-error" class="form-error hidden" role="alert"></p>
+      <button class="btn btn-primary" type="submit">Save reading</button>
+    </form>
+  </article>
+
+  <div id="log-flags"></div>
+
+  <div class="two-col">
+    <article class="card">
+      <h2>Blood pressure</h2>
+      <p class="muted small">Top line: systolic. Bottom line: diastolic. Dashed line marks 140/90.</p>
+      <div id="chart-bp" class="chart"></div>
+    </article>
+    <article class="card">
+      <h2>eGFR</h2>
+      <p class="muted small">Dashed line marks 60. Below it needs a doctor's review.</p>
+      <div id="chart-egfr" class="chart"></div>
+    </article>
+  </div>
+
+  <article class="card">
+    <div class="row-between">
+      <h2>Readings</h2>
+      <div class="row-gap">
+        <button class="link-btn" type="button" id="log-export">Download CSV</button>
+        <button class="link-btn danger" type="button" id="log-clear">Clear all</button>
+      </div>
+    </div>
+    <div class="table-wrap"><table id="log-table"></table></div>
+  </article>
+</section>
+
+<!-- ============ FORECASTING ============ -->
+<section id="tab-forecasting" class="tab-section">
+  <div class="page-head">
+    <h1>Forecasting</h1>
+    <p>See where your eGFR may be heading if your recent trend continues. It uses the readings in your Monitoring log.</p>
+  </div>
+
+  <div class="notice notice-warn"><strong>Read this first.</strong> This is a simple straight-line projection of your own readings. It is not a medical prediction. Real kidney function changes with illness, medicine, and treatment. Only a doctor can interpret your results.</div>
+
+  <div id="fc-empty" class="card hidden">
+    <h2>Not enough readings yet</h2>
+    <p>Add at least 2 eGFR readings on different dates in Monitoring. Three or more readings over 3 months or longer give a more useful trend.</p>
+    <button class="btn btn-primary" type="button" data-go="monitoring">Go to Monitoring</button>
+  </div>
+
+  <div id="fc-body" class="hidden">
+    <div class="stat-grid fc-stats">
+      <article class="card stat"><span class="stat-label">Latest eGFR</span><strong id="fc-latest">–</strong><small id="fc-stage"></small></article>
+      <article class="card stat"><span class="stat-label">Your trend</span><strong id="fc-slope">–</strong><small>per year</small></article>
+      <article class="card stat"><span class="stat-label">In 1 year</span><strong id="fc-1y">–</strong></article>
+      <article class="card stat"><span class="stat-label">In 3 years</span><strong id="fc-3y">–</strong></article>
+      <article class="card stat"><span class="stat-label">In 5 years</span><strong id="fc-5y">–</strong></article>
+    </div>
+
+    <article class="card">
+      <h2>eGFR projection</h2>
+      <div class="legend">
+        <span><i class="lg lg-solid"></i>Your readings</span>
+        <span><i class="lg lg-dash-blue"></i>Your trend continued</span>
+        <span><i class="lg lg-dash-grey"></i>Typical aging decline (about 1 per year)</span>
+      </div>
+      <div id="chart-fc" class="chart"></div>
+      <p id="fc-summary" class="fc-summary"></p>
+      <p id="fc-conf" class="muted small"></p>
+    </article>
+
+    <article class="card">
+      <h2>eGFR stages</h2>
+      <div class="table-wrap">
+        <table class="plain">
+          <tr><th>Stage</th><th>eGFR</th><th>Meaning</th></tr>
+          <tr><td>G1</td><td>90 or above</td><td>Normal or high</td></tr>
+          <tr><td>G2</td><td>60 to 89</td><td>Mildly decreased</td></tr>
+          <tr><td>G3a</td><td>45 to 59</td><td>Mild to moderate decrease</td></tr>
+          <tr><td>G3b</td><td>30 to 44</td><td>Moderate to severe decrease</td></tr>
+          <tr><td>G4</td><td>15 to 29</td><td>Severe decrease</td></tr>
+          <tr><td>G5</td><td>below 15</td><td>Kidney failure range</td></tr>
+        </table>
+      </div>
+      <p class="muted small">Stages follow the KDIGO guideline. A diagnosis needs results that stay low for 3 months or more, plus a doctor's review.</p>
+    </article>
+  </div>
+</section>
+
+<!-- ============ REFERRAL ============ -->
+<section id="tab-referral" class="tab-section">
+  <div class="page-head">
+    <h1>Referral</h1>
+    <p>Know when to see a doctor, what to bring, and how to request an appointment.</p>
+  </div>
+
+  <div class="notice notice-danger">
+    <strong>Go to the nearest emergency room now if you have:</strong> chest pain, trouble breathing, confusion, very little or no urine, severe swelling, or vomiting that will not stop.
+  </div>
+
+  <div class="two-col">
+    <article class="card">
+      <h2>Ask for a kidney check if</h2>
+      <ul class="list">
+        <li>Your screening result is moderate or high.</li>
+        <li>Your blood pressure is often 140/90 or higher.</li>
+        <li>You have diabetes or high blood pressure.</li>
+        <li>A close relative has kidney disease or is on dialysis.</li>
+        <li>You notice swelling, foamy urine, or changes in how often you urinate.</li>
+        <li>A lab test shows eGFR below 60, or protein in your urine.</li>
+      </ul>
+      <p class="muted small">A kidney specialist is called a nephrologist. Your regular doctor can refer you.</p>
+    </article>
+
+    <article class="card">
+      <h2>What to bring</h2>
+      <ul class="check" id="bring-list">
+        <li><label class="checkbox"><input type="checkbox"> Valid ID and PhilHealth number</label></li>
+        <li><label class="checkbox"><input type="checkbox"> Your Monitoring log (download the CSV)</label></li>
+        <li><label class="checkbox"><input type="checkbox"> Recent lab results, if any</label></li>
+        <li><label class="checkbox"><input type="checkbox"> A list of all medicines and supplements</label></li>
+        <li><label class="checkbox"><input type="checkbox"> Names of relatives with kidney disease</label></li>
+        <li><label class="checkbox"><input type="checkbox"> Your questions for the doctor</label></li>
+      </ul>
+    </article>
+  </div>
+
+  <article class="card">
+    <h2>Referral summary</h2>
+    <p class="muted small">A short note built from your latest screening and Monitoring log. Show it to your doctor. It is not a diagnosis.</p>
+    <pre id="ref-summary" class="summary"></pre>
+    <button class="btn btn-outline" type="button" id="ref-copy">Copy summary</button>
+    <span id="ref-copy-status" class="status-line inline"></span>
+  </article>
+
+  <article class="card">
+    <h2>Request an appointment</h2>
+    <p class="muted small">A partner provider will follow up by email or phone.</p>
+    <form id="referral-form">
+      <div class="grid">
+        <label>Name
+          <input type="text" name="name" required autocomplete="name">
+        </label>
+        <label>Email
+          <input type="email" name="email" required autocomplete="email">
+        </label>
+        <label>Phone
+          <input type="tel" name="phone" inputmode="tel">
+        </label>
+        <label>Preferred clinic or hospital
+          <input type="text" name="provider" placeholder="Name or city">
+        </label>
+      </div>
+      <label>Anything the provider should know (optional)
+        <input type="text" name="note" maxlength="120">
+      </label>
+      <p id="ref-error" class="form-error hidden" role="alert"></p>
+      <button class="btn btn-primary" type="submit" id="ref-submit">Send request</button>
+    </form>
+    <p id="ref-status" class="status-line"></p>
+  </article>
+</section>
+
+<!-- ============ DIALYSIS CENTERS ============ -->
+<section id="tab-centers" class="tab-section">
+  <div class="page-head">
+    <h1>Dialysis Centers</h1>
+    <p>Dialysis does the work of the kidneys when they can no longer clean the blood. Find a center near you.</p>
+  </div>
+
+  <article class="card">
+    <h2>Find a center near you</h2>
+    <form id="center-form" class="search-row">
+      <label class="grow">City or town
+        <input type="text" id="center-city" placeholder="e.g. Koronadal, General Santos, Davao">
+      </label>
+      <button class="btn btn-primary" type="submit">Search on map</button>
+    </form>
+    <div class="chips" id="center-chips"></div>
+    <p class="muted small">This opens Google Maps with your search. Call the center to confirm hours, services, and fees before you go.</p>
+  </article>
+
+  <div id="partner-card" class="card hidden">
+    <h2>Partner centers</h2>
+    <div id="partner-list" class="partners"></div>
+  </div>
+
+  <div class="two-col">
+    <article class="card">
+      <h2>Two kinds of dialysis</h2>
+      <h3 class="h3">Hemodialysis</h3>
+      <p>A machine filters your blood. Most people go to a center about 3 times a week for a few hours each time.</p>
+      <h3 class="h3">Peritoneal dialysis</h3>
+      <p>Fluid is placed in your belly and filters your blood inside your body. It is often done at home after training.</p>
+      <p class="muted small">Your nephrologist decides which kind fits you.</p>
+    </article>
+
+    <article class="card">
+      <h2>Questions to ask a center</h2>
+      <ul class="list">
+        <li>Are you accredited, and do you accept PhilHealth?</li>
+        <li>What is the cost per session after PhilHealth?</li>
+        <li>Which days and times have open slots?</li>
+        <li>Is a nephrologist on duty during sessions?</li>
+        <li>Do I need hepatitis tests before starting?</li>
+        <li>How far is it, and how will I get there?</li>
+      </ul>
+      <a class="link-ext" href="https://www.philhealth.gov.ph" target="_blank" rel="noopener">PhilHealth website</a>
+    </article>
+  </div>
+</section>
+
+<!-- ============ ABOUT ============ -->
+<section id="tab-about" class="tab-section">
+  <div class="page-head">
+    <h1>About Us</h1>
+    <p>An AI-assisted screening aid that points people toward early kidney care.</p>
+  </div>
+
+  <article class="card">
+    <h2>Why this exists</h2>
+    <p>Chronic kidney disease (CKD) is often silent until it is advanced. A simple, free check helps people see their risk early and talk to a doctor sooner. This tool does not diagnose CKD. It guides people toward a professional checkup.</p>
+  </article>
+
+  <div class="two-col">
+    <article class="card">
+      <h2>How your result is made</h2>
+      <ul class="list">
+        <li><strong>Model score:</strong> a Random Forest trained on the UCI Chronic Kidney Disease dataset (400 records). It uses the lab and clinical values you provide.</li>
+        <li><strong>Rule score:</strong> a weighted point system for symptoms, history, family history, and lifestyle.</li>
+        <li><strong>Combined:</strong> the two scores are averaged into a low, moderate, or high result and a percentage.</li>
+      </ul>
+    </article>
+
+    <article class="card">
+      <h2>Limits you should know</h2>
+      <ul class="list">
+        <li>This is a student prototype, not a clinically validated tool.</li>
+        <li>The model learned from only 400 patient records.</li>
+        <li>The rule weights are not tested against real patient outcomes.</li>
+        <li>No nephrologist has reviewed the scoring yet.</li>
+        <li>Blood type, last checkup date, and last meal are saved for context. They do not change the score.</li>
+      </ul>
+    </article>
+  </div>
+
+  <div class="two-col">
+    <article class="card">
+      <h2>Built with</h2>
+      <div class="chips static">
+        <span class="chip">HTML, CSS, JavaScript</span>
+        <span class="chip">Python FastAPI</span>
+        <span class="chip">scikit-learn</span>
+        <span class="chip">Supabase</span>
+        <span class="chip">Vercel</span>
+        <span class="chip">AI chat assistant</span>
+      </div>
+      <p class="muted small">Dataset: Rubini, L., Soundarapandian, P., and Eswaran, P. (2015). Chronic Kidney Disease. UCI Machine Learning Repository.</p>
+    </article>
+
+    <article class="card">
+      <h2>Team</h2>
+      <p>Developed by <strong>Raiyne Adriane Palaganas</strong> as a school project.</p>
+      <p class="muted small">Your health answers are saved to calculate your result and to process appointment requests. Do not enter anything you are not comfortable sharing.</p>
+    </article>
+  </div>
+
+  <div class="notice notice-info"><strong>Medical disclaimer.</strong> This site gives general information and a preliminary risk estimate. It is not medical advice, a diagnosis, or a treatment plan. Always talk to a licensed healthcare professional about your health.</div>
+</section>
+
+</main>
+
+<script src="script.js?v=3"></script>
+<script src="centers.js?v=3"></script>
+<script src="app.js?v=3"></script>
+<script src="chat.js?v=2"></script>
 </body>
 </html>
