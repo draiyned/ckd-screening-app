@@ -32,6 +32,8 @@ Style
 - Reply in the language the user writes in (English, Tagalog, or Hiligaynon).
 - Use short sentences and common words. Explain medical terms in plain words.
 - Keep replies under 150 words.
+- Use plain text only. No markdown, no asterisks, no headings. For a list, write short lines that start with a dash.
+- Always finish your last sentence.
 
 Safety rules
 - Never diagnose. Never say the user has CKD or does not have CKD.
@@ -143,8 +145,12 @@ def chat(req: ChatRequest):
         ]
         + history,
         "temperature": 0.3,
-        "max_tokens": 400,
+        # Some models count hidden thinking inside this limit, so keep it generous.
+        "max_tokens": int(os.environ.get("CHAT_MAX_TOKENS", "1500")),
     }
+    effort = os.environ.get("CHAT_REASONING_EFFORT")
+    if effort:
+        payload["reasoning_effort"] = effort
 
     try:
         resp = httpx.post(url, headers=headers, json=payload, timeout=25.0)
@@ -159,7 +165,9 @@ def chat(req: ChatRequest):
         raise HTTPException(status_code=502, detail="The chat service returned an error.")
 
     try:
-        reply = resp.json()["choices"][0]["message"]["content"].strip()
+        choice = resp.json()["choices"][0]
+        reply = (choice["message"]["content"] or "").strip()
+        finish = choice.get("finish_reason")
     except (KeyError, IndexError, ValueError, TypeError, AttributeError):
         # GitHub Models sometimes sends the answer as plain text, not JSON.
         body = resp.text.strip()
@@ -170,8 +178,12 @@ def chat(req: ChatRequest):
                 detail="Unexpected reply from the chat service. Got: " + resp.text[:200],
             )
         reply = body
+        finish = None
 
     if not reply:
         raise HTTPException(status_code=502, detail="The chat service sent an empty reply.")
+
+    if finish == "length":
+        reply += " ... (My answer was cut short. Ask me to continue.)"
 
     return {"reply": reply}

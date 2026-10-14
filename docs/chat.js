@@ -64,6 +64,15 @@
   const history = [];
   let busy = false;
 
+  // The widget shows plain text, so remove markdown marks the model may add.
+  function cleanText(t) {
+    return String(t)
+      .replace(/\*\*(.+?)\*\*/gs, "$1")
+      .replace(/^\s*[*]\s+/gm, "- ")
+      .replace(/^#{1,6}\s*/gm, "")
+      .trim();
+  }
+
   function addMsg(role, text) {
     const div = document.createElement("div");
     div.className = "ckd-msg " + role;
@@ -140,7 +149,7 @@
 
       const data = await res.json();
       history.push({ role: "assistant", content: data.reply });
-      addMsg("bot", data.reply);
+      addMsg("bot", cleanText(data.reply));
     } catch (err) {
       typing.remove();
       history.pop();
