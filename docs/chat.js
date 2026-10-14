@@ -7,23 +7,23 @@
   #ckd-pill{display:flex;align-items:center;gap:8px;width:auto;padding:10px 16px;border-radius:999px;background:#fff;color:#1a202c;border:none;font-size:14px;font-weight:700;letter-spacing:.2px;text-transform:uppercase;cursor:pointer;box-shadow:0 2px 12px rgba(0,0,0,.18)}
   #ckd-pill:hover{background:#f7fafc}
   #ckd-pill svg{width:18px;height:18px;flex:none}
-  #ckd-fab{width:64px;height:64px;padding:0;border-radius:50%;border:none;cursor:pointer;background:linear-gradient(145deg,#3182ce,#2b6cb0);color:#fff;box-shadow:0 4px 14px rgba(43,108,176,.5);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:9px;font-weight:700;letter-spacing:.6px;flex:none}
-  #ckd-fab:hover{background:linear-gradient(145deg,#2b6cb0,#1a4971)}
+  #ckd-fab{width:64px;height:64px;padding:0;border-radius:50%;border:none;cursor:pointer;background:linear-gradient(145deg,#e53e3e,#c53030);color:#fff;box-shadow:0 4px 14px rgba(197,48,48,.5);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:9px;font-weight:700;letter-spacing:.6px;flex:none}
+  #ckd-fab:hover{background:linear-gradient(145deg,#c53030,#9b1c1c)}
   #ckd-fab svg{width:26px;height:26px}
   #ckd-launcher.open #ckd-pill{display:none}
   #ckd-chat-panel{position:fixed;right:16px;bottom:92px;z-index:1000;width:350px;max-width:calc(100vw - 32px);height:480px;max-height:calc(100vh - 112px);background:#fff;border:1px solid #e2e8f0;border-radius:16px;box-shadow:0 8px 28px rgba(0,0,0,.25);display:none;flex-direction:column;overflow:hidden;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
   #ckd-chat-panel.open{display:flex}
-  #ckd-chat-head{background:linear-gradient(145deg,#3182ce,#2b6cb0);color:#fff;padding:12px 14px;font-weight:700;font-size:15px;display:flex;justify-content:space-between;align-items:center}
+  #ckd-chat-head{background:linear-gradient(145deg,#e53e3e,#c53030);color:#fff;padding:12px 14px;font-weight:700;font-size:15px;display:flex;justify-content:space-between;align-items:center}
   #ckd-chat-close{width:auto;background:transparent;border:none;color:#fff;font-size:22px;line-height:1;padding:0 4px;cursor:pointer}
   #ckd-chat-close:hover{background:transparent;opacity:.8}
   #ckd-chat-log{flex:1;overflow-y:auto;padding:12px;background:#f7fafc}
   .ckd-msg{max-width:85%;padding:8px 12px;border-radius:14px;margin-bottom:8px;font-size:14px;line-height:1.4;white-space:pre-wrap;word-wrap:break-word}
   .ckd-msg.bot{background:#fff;border:1px solid #e2e8f0;color:#1a202c}
-  .ckd-msg.user{background:#2b6cb0;color:#fff;margin-left:auto}
+  .ckd-msg.user{background:#c53030;color:#fff;margin-left:auto}
   .ckd-msg.note{background:transparent;color:#718096;font-size:12px;text-align:center;max-width:100%}
   #ckd-chat-form{display:flex;gap:6px;padding:8px;border-top:1px solid #e2e8f0;background:#fff}
   #ckd-chat-input{flex:1;margin:0;padding:8px 10px;border:1px solid #e2e8f0;border-radius:8px;font-size:14px}
-  #ckd-chat-send{width:auto;padding:8px 14px;font-size:14px}
+  #ckd-chat-send{width:auto;padding:8px 14px;font-size:14px;font-weight:600;background:#c53030;color:#fff;border:none;border-radius:8px;cursor:pointer}#ckd-chat-send:hover{background:#9b1c1c}#ckd-chat-send:disabled{opacity:.6}
   #ckd-chat-disclaimer{padding:4px 10px 8px;font-size:11px;color:#718096;background:#fff}
   @media (max-width:420px){#ckd-pill{padding:9px 12px;font-size:12px}}
   `;
