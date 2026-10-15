@@ -672,7 +672,7 @@
   });
 
   /* ---------------- Dialysis centers ---------------- */
-  const CITIES = ["Koronadal", "General Santos", "Davao City", "Cagayan de Oro", "Cebu City", "Iloilo City", "Quezon City", "Manila"];
+  const CITIES = ["Santo Niño", "Koronadal", "Davao City", "General Santos", "Isulan", "Tacurong", "Quezon City", "Manila"];
 
   function openMap(city) {
     const q = encodeURIComponent(`dialysis center in ${city}, Philippines`);
