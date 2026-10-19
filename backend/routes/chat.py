@@ -13,8 +13,10 @@ import os
 from typing import List, Optional
 
 import httpx
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
+
+from ratelimit import limit
 
 router = APIRouter()
 
@@ -119,7 +121,7 @@ def chat_status():
     return info
 
 
-@router.post("/chat")
+@router.post("/chat", dependencies=[Depends(limit("chat", 60, 600))])
 def chat(req: ChatRequest):
     api_key = os.environ.get("CHAT_API_KEY")
     if not api_key:

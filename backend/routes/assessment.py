@@ -1,9 +1,10 @@
-from fastapi import APIRouter, HTTPException
-from pydantic import BaseModel
+from fastapi import APIRouter, Depends, HTTPException
+from pydantic import BaseModel, Field
 from typing import Optional
 
 from model.combined_risk import assess
 from database import get_client
+from ratelimit import limit
 
 router = APIRouter()
 
@@ -15,48 +16,48 @@ INTERVENTIONS = {
 
 
 class AssessmentInput(BaseModel):
-    name: Optional[str] = None
-    email: Optional[str] = None
-    age: Optional[float] = None
-    sex: Optional[str] = None
-    blood_type: Optional[str] = None
-    last_checkup: Optional[str] = None
+    name: Optional[str] = Field(None, max_length=100)
+    email: Optional[str] = Field(None, max_length=254)
+    age: Optional[float] = Field(None, ge=0, le=120)
+    sex: Optional[str] = Field(None, max_length=20)
+    blood_type: Optional[str] = Field(None, max_length=3)
+    last_checkup: Optional[str] = Field(None, max_length=10)
 
-    bp_systolic: Optional[float] = None
-    bp_diastolic: Optional[float] = None
-    weight: Optional[float] = None
-    last_meal: Optional[str] = None
+    bp_systolic: Optional[float] = Field(None, ge=40, le=300)
+    bp_diastolic: Optional[float] = Field(None, ge=20, le=200)
+    weight: Optional[float] = Field(None, ge=1, le=500)
+    last_meal: Optional[str] = Field(None, max_length=200)
 
     swelling: Optional[bool] = None
     fatigue: Optional[bool] = None
     urination_changes: Optional[bool] = None
     nausea: Optional[bool] = None
     other_symptoms: Optional[bool] = None
-    other_symptoms_note: Optional[str] = None
+    other_symptoms_note: Optional[str] = Field(None, max_length=300)
 
     hypertension: Optional[bool] = None
     diabetes: Optional[bool] = None
     previous_kidney_problems: Optional[bool] = None
     other_conditions: Optional[bool] = None
-    other_conditions_note: Optional[str] = None
+    other_conditions_note: Optional[str] = Field(None, max_length=300)
 
     family_history_kidney_disease: Optional[bool] = None
 
-    smoking_status: Optional[str] = None
+    smoking_status: Optional[str] = Field(None, max_length=20)
     alcohol_use: Optional[bool] = None
     poor_diet: Optional[bool] = None
     low_physical_activity: Optional[bool] = None
     medication_use: Optional[bool] = None
-    medication_use_note: Optional[str] = None
+    medication_use_note: Optional[str] = Field(None, max_length=300)
 
-    serum_creatinine: Optional[float] = None
-    bun: Optional[float] = None
+    serum_creatinine: Optional[float] = Field(None, ge=0, le=50)
+    bun: Optional[float] = Field(None, ge=0, le=500)
     urine_protein_albumin: Optional[bool] = None
-    blood_glucose: Optional[float] = None
-    egfr: Optional[float] = None
+    blood_glucose: Optional[float] = Field(None, ge=0, le=2000)
+    egfr: Optional[float] = Field(None, ge=0, le=200)
 
 
-@router.post("/assessment")
+@router.post("/assessment", dependencies=[Depends(limit("assessment", 60, 3600))])
 def run_assessment(payload: AssessmentInput):
     input_dict = payload.model_dump(exclude={"name", "email"})
 
@@ -77,7 +78,9 @@ def run_assessment(payload: AssessmentInput):
         client = get_client()
         response = client.table("assessments").insert(record).execute()
         assessment_id = response.data[0]["id"] if response.data else None
-    except Exception:
+    except Exception as e:
+        # Log the error type only. Never log the person's answers.
+        print("assessment not saved:", type(e).__name__, str(e)[:200])
         assessment_id = None
 
     return {

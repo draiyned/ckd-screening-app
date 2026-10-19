@@ -3,24 +3,25 @@ Appointment request endpoint for higher-risk users who want to connect
 with a partnered healthcare provider.
 """
 
-from fastapi import APIRouter, HTTPException
-from pydantic import BaseModel
+from fastapi import APIRouter, Depends, HTTPException
+from pydantic import BaseModel, Field
 from typing import Optional
 
 from database import get_client
+from ratelimit import limit
 
 router = APIRouter()
 
 
 class AppointmentRequest(BaseModel):
-    assessment_id: Optional[str] = None
-    name: str
-    email: str
-    phone: Optional[str] = None
-    preferred_provider: Optional[str] = None
+    assessment_id: Optional[str] = Field(None, max_length=64)
+    name: str = Field(..., min_length=1, max_length=100)
+    email: str = Field(..., min_length=3, max_length=254)
+    phone: Optional[str] = Field(None, max_length=40)
+    preferred_provider: Optional[str] = Field(None, max_length=300)
 
 
-@router.post("/appointments")
+@router.post("/appointments", dependencies=[Depends(limit("appointments", 15, 3600))])
 def request_appointment(payload: AppointmentRequest):
     record = payload.model_dump()
     record["status"] = "pending"
@@ -36,8 +37,9 @@ def request_appointment(payload: AppointmentRequest):
 
         appointment_id = response.data[0]["id"] if response.data else None
     except Exception as e:
+        print("appointment not saved:", type(e).__name__, str(e)[:200])
         raise HTTPException(
-            status_code=503, detail=f"Could not save appointment request: {e}"
+            status_code=503, detail="Could not save your appointment request. Please try again."
         )
 
     return {
@@ -45,20 +47,3 @@ def request_appointment(payload: AppointmentRequest):
         "status": "pending",
         "message": "Your appointment request has been received. A provider will follow up by email.",
     }
-
-
-@router.get("/appointments/{appointment_id}")
-def get_appointment(appointment_id: str):
-    try:
-        client = get_client()
-        response = (
-            client.table("appointments")
-            .select("*")
-            .eq("id", appointment_id)
-            .single()
-            .execute()
-        )
-    except Exception as e:
-        raise HTTPException(status_code=404, detail=f"Appointment not found: {e}")
-
-    return response.data

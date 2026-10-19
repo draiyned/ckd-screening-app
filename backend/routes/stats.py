@@ -7,9 +7,10 @@ Returns counts only. It never sends names, emails, or any single person's answer
 from collections import Counter
 from datetime import date, datetime, timedelta
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 
 from database import get_client
+from ratelimit import limit
 
 router = APIRouter()
 
@@ -20,7 +21,7 @@ def week_start(d: date) -> date:
     return d - timedelta(days=d.weekday())
 
 
-@router.get("/stats")
+@router.get("/stats", dependencies=[Depends(limit("stats", 60, 60))])
 def stats():
     try:
         client = get_client()
@@ -37,8 +38,12 @@ def stats():
             rows = client.table("assessments").select("risk_level").limit(5000).execute().data
 
         appointments = client.table("appointments").select("id").limit(5000).execute().data
-    except Exception:
-        raise HTTPException(status_code=503, detail="Statistics are not available right now.")
+    except Exception as e:
+        print("stats error", type(e).__name__, str(e)[:300])
+        raise HTTPException(
+            status_code=503,
+            detail=f"Statistics are not available right now. {type(e).__name__}: {str(e)[:120]}",
+        )
 
     by_risk = Counter(r.get("risk_level") for r in rows)
 

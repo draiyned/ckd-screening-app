@@ -111,6 +111,10 @@ assessmentForm.addEventListener("submit", async (e) => {
       body: JSON.stringify(payload),
     });
 
+    if (response.status === 429) {
+      showFormError("Too many attempts from this connection. Please wait a few minutes and try again.");
+      return;
+    }
     if (!response.ok) {
       throw new Error(`Request failed: ${response.status}`);
     }

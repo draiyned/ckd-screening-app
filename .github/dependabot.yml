@@ -1,0 +1,7 @@
+# Checks the Python packages every week and opens a pull request when one has a security fix.
+version: 2
+updates:
+  - package-ecosystem: "pip"
+    directory: "/backend"
+    schedule:
+      interval: "weekly"

@@ -205,13 +205,19 @@
     const timer = setTimeout(() => ctrl.abort(), 20000);
     try {
       const res = await fetch(`${API}/stats`, { signal: ctrl.signal });
-      if (!res.ok) throw new Error("HTTP " + res.status);
+      if (!res.ok) {
+        let detail = "";
+        try { detail = (await res.json()).detail || ""; } catch (e2) { /* not JSON */ }
+        const err = new Error("HTTP " + res.status);
+        err.info = `Error ${res.status}${detail ? ": " + String(detail).slice(0, 160) : ""}`;
+        throw err;
+      }
       const data = await res.json();
       statsCache = { at: Date.now(), data };
       note.className = "notice hidden";
       renderStats(data);
     } catch (err) {
-      note.textContent = "Could not load the statistics. The server may be waking up. Open this page again in a moment.";
+      note.textContent = "Could not load the statistics. " + (err.info ? "(" + err.info + ") " : (err.name === "AbortError" ? "(The server took too long.) " : "(Could not reach the server.) ")) + "Open this page again in a moment.";
       note.className = "notice notice-warn";
       console.error(err);
     } finally {
@@ -672,7 +678,7 @@
   });
 
   /* ---------------- Dialysis centers ---------------- */
-  const CITIES = ["Santo Niño", "Koronadal", "Davao City", "General Santos", "Isulan", "Tacurong", "Quezon City", "Manila"];
+  const CITIES = ["Koronadal", "General Santos", "Davao City", "Cagayan de Oro", "Cebu City", "Iloilo City", "Quezon City", "Manila"];
 
   function openMap(city) {
     const q = encodeURIComponent(`dialysis center in ${city}, Philippines`);
