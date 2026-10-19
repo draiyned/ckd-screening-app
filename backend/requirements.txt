@@ -4,6 +4,6 @@ pandas==2.2.2
 numpy==1.26.4
 scikit-learn==1.5.1
 joblib==1.4.2
-python-dotenv==1.0.1
+python-dotenv==1.2.4
 supabase==2.7.4
 httpx==0.27.2
