@@ -755,6 +755,79 @@
       if (!f["email"].value) f["email"].value = last.email || "";
     }
   }
+  /* Center picker: search PARTNER_CENTERS by name, phone, or email. */
+  const centers = typeof PARTNER_CENTERS !== "undefined" ? PARTNER_CENTERS : [];
+  const hay = centers.map((c) => [c.name, c.city, c.phone, c.email].filter(Boolean).join(" ").toLowerCase());
+  function searchCenters(q) {
+    const t = q.toLowerCase().split(/\s+/).filter(Boolean);
+    const out = [];
+    for (let i = 0; i < centers.length; i++) if (t.every((w) => hay[i].includes(w))) out.push(centers[i]);
+    return out;
+  }
+  let selectedCenter = null;
+  function chosenCenter() { return selectedCenter; }
+
+  function updatePicker() {
+    const chosen = $("#ref-center-chosen");
+    chosen.classList.toggle("hidden", !selectedCenter);
+    chosen.textContent = selectedCenter ? "Selected: " + selectedCenter.name + (selectedCenter.email ? " (" + selectedCenter.email + ")" : "") : "";
+    $("#ref-mailto").classList.toggle("hidden", !(selectedCenter && selectedCenter.email));
+  }
+  function showResults() {
+    const box = $("#ref-center-results");
+    box.innerHTML = "";
+    const q = $("#ref-center-search").value.trim();
+    if (!q) return;
+    const found = searchCenters(q);
+    found.slice(0, 8).forEach((c) => {
+      const b = el("button", c.name);
+      b.type = "button";
+      b.appendChild(el("small", [c.phone, c.email].filter(Boolean).join("  |  ")));
+      b.addEventListener("click", () => {
+        selectedCenter = c;
+        box.innerHTML = "";
+        $("#ref-center-search").value = "";
+        updatePicker();
+      });
+      box.appendChild(b);
+    });
+    if (!found.length) box.appendChild(el("p", "No match. Try fewer letters, or type a clinic name instead.", "muted small"));
+    else if (found.length > 8) box.appendChild(el("p", found.length + " matches. Type more letters to narrow the list.", "muted small"));
+  }
+  if (centers.length) {
+    $("#ref-center-wrap").classList.remove("hidden");
+    $("#ref-provider-wrap").classList.add("hidden");
+    $("#ref-center-search").addEventListener("input", showResults);
+    $("#ref-center-other").addEventListener("click", () => {
+      selectedCenter = null;
+      updatePicker();
+      $("#ref-provider-wrap").classList.remove("hidden");
+      $("#referral-form").elements["provider"].focus();
+    });
+  }
+
+  $("#ref-mailto").addEventListener("click", () => {
+    const c = chosenCenter();
+    if (!c || !c.email) return;
+    const f = $("#referral-form").elements;
+    const body = [
+      "Hello " + c.name + ",",
+      "",
+      "I would like to ask about dialysis or kidney care services.",
+      "",
+      "Name: " + (f["name"].value.trim() || "-"),
+      "Email: " + (f["email"].value.trim() || "-"),
+      "Phone: " + (f["phone"].value.trim() || "-"),
+      f["note"].value.trim() ? "Note: " + f["note"].value.trim() : "",
+      "",
+      $("#ref-summary").textContent,
+      "",
+      "Thank you.",
+    ].filter((l, i, a) => l !== "" || a[i - 1] !== "").join("\n");
+    const subject = "Referral inquiry from " + (f["name"].value.trim() || "a patient");
+    window.location.href = "mailto:" + c.email + "?subject=" + encodeURIComponent(subject) + "&body=" + encodeURIComponent(body).slice(0, 1800);
+  });
+
   onEnter.referral = renderReferral;
   document.addEventListener("ckd:result", renderReferral);
 
@@ -792,7 +865,8 @@
       return;
     }
     const last = loadJSON("ckd_last", null);
-    const provider = f["provider"].value.trim();
+    const pickedC = chosenCenter();
+    const provider = pickedC ? [pickedC.name, pickedC.city].filter(Boolean).join(", ") : f["provider"].value.trim();
     const note = f["note"].value.trim();
     const payload = {
       assessment_id: last && last.assessment_id ? last.assessment_id : null,
@@ -812,8 +886,12 @@
       });
       if (!res.ok) throw new Error("HTTP " + res.status);
       const data = await res.json();
-      status.textContent = data.message || "Your request was received.";
+      status.textContent = data.message || "Your request was saved.";
       e.target.reset();
+      selectedCenter = null;
+      $("#ref-center-results").innerHTML = "";
+      $("#ref-provider-wrap").classList.toggle("hidden", centers.length > 0);
+      updatePicker();
     } catch (error) {
       status.textContent = "Could not send your request. Please try again.";
       status.classList.add("bad");
@@ -853,31 +931,49 @@
     openMap(city);
   });
 
-  if (typeof PARTNER_CENTERS !== "undefined" && PARTNER_CENTERS.length) {
+  if (centers.length) {
     $("#partner-card").classList.remove("hidden");
     const list = $("#partner-list");
-    PARTNER_CENTERS.forEach((c) => {
-      const card = el("div", null, "partner");
-      card.appendChild(el("h3", c.name));
-      if (c.city || c.address) card.appendChild(el("p", [c.address, c.city].filter(Boolean).join(", ")));
+    const more = $("#partner-more");
+    const PAGE = 20;
+    let matches = centers, shown = 0;
+
+    function card(c) {
+      const d = el("div", null, "partner");
+      d.appendChild(el("h3", c.name));
+      if (c.city || c.address) d.appendChild(el("p", [c.address, c.city].filter(Boolean).join(", ")));
       if (c.phone) {
         const p = el("p");
         const a = el("a", c.phone);
-        a.href = "tel:" + String(c.phone).replace(/[^\d+]/g, "");
+        a.href = "tel:" + String(c.phone).split(/[\/;]/)[0].replace(/[^\d+]/g, "");
         p.appendChild(a);
-        card.appendChild(p);
+        d.appendChild(p);
       }
       if (c.email) {
         const p = el("p");
         const a = el("a", c.email);
-        a.href = "mailto:" + encodeURIComponent(c.email).replace(/%40/g, "@");
+        a.href = "mailto:" + c.email;
         p.appendChild(a);
-        card.appendChild(p);
+        d.appendChild(p);
       }
-      if (c.philhealth === true) card.appendChild(el("p", "Accepts PhilHealth"));
-      if (c.note) card.appendChild(el("p", c.note));
-      list.appendChild(card);
+      if (c.philhealth === true) d.appendChild(el("p", "Accepts PhilHealth"));
+      if (c.note) d.appendChild(el("p", c.note));
+      return d;
+    }
+    function draw(reset) {
+      if (reset) { list.innerHTML = ""; shown = 0; }
+      matches.slice(shown, shown + PAGE).forEach((c) => list.appendChild(card(c)));
+      shown = Math.min(matches.length, shown + PAGE);
+      $("#partner-count").textContent = matches.length ? `Showing ${shown} of ${matches.length}` : "No match. Try fewer letters.";
+      more.classList.toggle("hidden", shown >= matches.length);
+    }
+    $("#partner-search").addEventListener("input", (ev) => {
+      const q = ev.target.value.trim();
+      matches = q ? searchCenters(q) : centers;
+      draw(true);
     });
+    more.addEventListener("click", () => draw(false));
+    draw(true);
   }
 
   /* ---------------- Start ---------------- */

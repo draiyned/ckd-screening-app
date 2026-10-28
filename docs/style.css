@@ -488,3 +488,11 @@ td .x { background: none; border: 0; color: var(--high); cursor: pointer; font-s
   .tab-section.active { animation: none; }
   .meter span, .bar-fill, .sidebar { transition: none; }
 }
+
+.span2 { grid-column: 1 / -1; }
+.pick-list { display: grid; gap: 6px; margin: 8px 0; }
+.pick-list button { text-align: left; border: 1px solid var(--border); background: #fff; border-radius: 10px; padding: 10px 12px; font: inherit; cursor: pointer; }
+.pick-list button small { display: block; color: var(--muted); }
+.pick-list button:hover, .pick-list button:focus-visible { border-color: #c53030; }
+.chosen { font-weight: 600; margin: 8px 0; }
+#partner-more { margin-top: 12px; }

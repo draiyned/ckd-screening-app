@@ -45,5 +45,5 @@ def request_appointment(payload: AppointmentRequest):
     return {
         "appointment_id": appointment_id,
         "status": "pending",
-        "message": "Your appointment request has been received. A provider will follow up by email.",
+        "message": "Your request was saved on this platform. Please also contact the dialysis center yourself to confirm an appointment.",
     }

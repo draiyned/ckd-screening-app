@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>CKD Risk Screening</title>
 <meta name="description" content="A preliminary chronic kidney disease (CKD) risk screening tool. It does not diagnose CKD.">
-<link rel="stylesheet" href="style.css?v=7">
+<link rel="stylesheet" href="style.css?v=9">
 </head>
 <body>
 
@@ -480,7 +480,7 @@
 
   <article class="card">
     <h2>Request an appointment</h2>
-    <p class="muted small">A partner provider will follow up by email or phone.</p>
+    <p class="muted small">Your request is saved on this platform. The platform does not contact the center for you. Choose a center and send the referral by email.</p>
     <form id="referral-form">
       <div class="grid">
         <label>Name
@@ -492,7 +492,15 @@
         <label>Phone
           <input type="tel" name="phone" inputmode="tel">
         </label>
-        <label>Preferred clinic or hospital
+        <div id="ref-center-wrap" class="span2 hidden">
+          <label>Dialysis center
+            <input type="search" id="ref-center-search" placeholder="Search by name or email" autocomplete="off">
+          </label>
+          <div id="ref-center-results" class="pick-list"></div>
+          <p id="ref-center-chosen" class="chosen hidden"></p>
+          <button class="link-btn" type="button" id="ref-center-other">Not in the list? Type a clinic name instead</button>
+        </div>
+        <label id="ref-provider-wrap" class="span2">Preferred clinic or hospital
           <input type="text" name="provider" placeholder="Name or city">
         </label>
       </div>
@@ -501,6 +509,7 @@
       </label>
       <p id="ref-error" class="form-error hidden" role="alert"></p>
       <button class="btn btn-primary" type="submit" id="ref-submit">Send request</button>
+      <button class="btn btn-outline hidden" type="button" id="ref-mailto">Email referral to this center</button>
     </form>
     <p id="ref-status" class="status-line"></p>
   </article>
@@ -526,8 +535,14 @@
   </article>
 
   <div id="partner-card" class="card hidden">
-    <h2>Partner centers</h2>
+    <h2>Dialysis center list</h2>
+    <p class="muted small">From a PhilHealth list of dialysis clinics. The list has no city column, so search by name, phone, or email. Details change, so call first.</p>
+    <label>Search the list
+      <input type="search" id="partner-search" placeholder="e.g. Hemotek, Fresenius, Avitum, a phone number" autocomplete="off">
+    </label>
+    <p id="partner-count" class="muted small"></p>
     <div id="partner-list" class="partners"></div>
+    <button class="btn btn-outline hidden" type="button" id="partner-more">Show more</button>
   </div>
 
   <div class="two-col">
@@ -615,9 +630,9 @@
 
 </main>
 
-<script src="script.js?v=7"></script>
-<script src="centers.js?v=7"></script>
-<script src="app.js?v=7"></script>
-<script src="chat.js?v=7"></script>
+<script src="script.js?v=9"></script>
+<script src="centers.js?v=9"></script>
+<script src="app.js?v=9"></script>
+<script src="chat.js?v=9"></script>
 </body>
 </html>
