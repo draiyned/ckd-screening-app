@@ -67,7 +67,7 @@ def run_assessment(payload: AssessmentInput):
     record = {
         "name": payload.name,
         "email": payload.email,
-        "age": payload.age,
+        "age": int(round(payload.age)) if payload.age is not None else None,
         "inputs": {**input_dict, "address": payload.address},
         "combined_score": result["combined_score"],
         "risk_level": result["risk_level"],
