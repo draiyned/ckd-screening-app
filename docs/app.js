@@ -603,7 +603,7 @@
         : `Based on ${n} readings over ${months} months. Treat it as a rough guide only.`;
   }
 
-  /* ---- Population forecast: all moderate and high risk screenings on this site, up to 2100 ---- */
+  /* ---- Population forecast: all moderate and high risk screenings on this site, over the long term ---- */
   // Levels are set by this project for illustration. They are not clinical or government thresholds.
   const POP_ZONES = [
     { key: "normal", label: "Normal", from: 0 },
@@ -620,7 +620,7 @@
     ymax = ticks[ticks.length - 1];
     const x = (yr) => L + ((yr - startYear) / (endYear - startYear)) * (W - L - R);
     const y = (v) => T + (1 - Math.min(v, ymax) / ymax) * (H - T - B);
-    let svg = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Projected total of moderate and high risk screenings up to ${endYear}">`;
+    let svg = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Projected total of moderate and high risk screenings over the coming decades">`;
     POP_ZONES.forEach((z, i) => {
       if (z.from >= ymax) return;
       const top = i + 1 < POP_ZONES.length ? Math.min(POP_ZONES[i + 1].from, ymax) : ymax;
@@ -630,9 +630,9 @@
       svg += `<line class="ax" x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}"/>`;
       svg += `<text class="ax-text" x="${L - 6}" y="${y(v) + 4}" text-anchor="end">${fmtN(v)}</text>`;
     });
-    for (let i = 0; i < 4; i++) {
+    for (let i = 0; i < 3; i++) {
       const yr = startYear + ((endYear - startYear) * i) / 3;
-      const anchor = i === 0 ? "start" : i === 3 ? "end" : "middle";
+      const anchor = i === 0 ? "start" : "middle";
       svg += `<text class="ax-text" x="${x(yr)}" y="${H - 8}" text-anchor="${anchor}">${Math.round(yr)}</text>`;
     }
     svg += `<polyline class="ln ln-blue" points="${series.map((p) => `${x(p.yr).toFixed(1)},${y(p.v).toFixed(1)}`).join(" ")}"/>`;
@@ -702,16 +702,16 @@
     $("#pf-pace").textContent = fmtN(perYear);
     const zone = zoneOf(final);
     $("#pf-level").textContent = zone.label;
-    $("#pf-2100").textContent = `about ${fmtN(final)} in 2100`;
+    $("#pf-2100").textContent = `about ${fmtN(final)} at the end`;
 
     const crossings = POP_ZONES.slice(1).map((z) => {
       if (atRisk >= z.from) return `${z.label} (${fmtN(z.from)}): already reached.`;
       if (perYear <= 0) return `${z.label} (${fmtN(z.from)}): not reached.`;
       const yr = startYear + (z.from - atRisk) / perYear;
-      return yr > endYear ? `${z.label} (${fmtN(z.from)}): not reached by 2100.` : `${z.label} (${fmtN(z.from)}): around ${Math.round(yr)}.`;
+      return yr > endYear ? `${z.label} (${fmtN(z.from)}): not reached in this projection.` : `${z.label} (${fmtN(z.from)}): around ${Math.round(yr)}.`;
     });
     $("#pf-summary").textContent = "At this pace: " + crossings.join(" ");
-    $("#pf-conf").textContent = `Based on ${fmtN(d.total)} screenings (${fmtN(atRisk)} at moderate or high risk) over ${activeWeeks} week(s). It assumes the same pace every year until 2100, so it ignores growth, population change, and treatment. These are people who chose to use this site, not all CKD cases in the Philippines. The Caution, Warning, and At risk levels are set by this project for illustration.`;
+    $("#pf-conf").textContent = `Based on ${fmtN(d.total)} screenings (${fmtN(atRisk)} at moderate or high risk) over ${activeWeeks} week(s). It assumes the same pace every year for the whole projection, so it ignores growth, population change, and treatment. These are people who chose to use this site, not all CKD cases in the Philippines. The Caution, Warning, and At risk levels are set by this project for illustration.`;
   }
 
   onEnter.forecasting = function () {
