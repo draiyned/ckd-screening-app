@@ -18,6 +18,7 @@ INTERVENTIONS = {
 class AssessmentInput(BaseModel):
     name: Optional[str] = Field(None, max_length=100)
     email: Optional[str] = Field(None, max_length=254)
+    address: Optional[str] = Field(None, max_length=200)
     age: Optional[float] = Field(None, ge=0, le=120)
     sex: Optional[str] = Field(None, max_length=20)
     blood_type: Optional[str] = Field(None, max_length=3)
@@ -59,7 +60,7 @@ class AssessmentInput(BaseModel):
 
 @router.post("/assessment", dependencies=[Depends(limit("assessment", 60, 3600))])
 def run_assessment(payload: AssessmentInput):
-    input_dict = payload.model_dump(exclude={"name", "email"})
+    input_dict = payload.model_dump(exclude={"name", "email", "address"})
 
     result = assess(input_dict)
 
@@ -67,7 +68,7 @@ def run_assessment(payload: AssessmentInput):
         "name": payload.name,
         "email": payload.email,
         "age": payload.age,
-        "inputs": input_dict,
+        "inputs": {**input_dict, "address": payload.address},
         "combined_score": result["combined_score"],
         "risk_level": result["risk_level"],
         "model_probability": result["model_probability"],

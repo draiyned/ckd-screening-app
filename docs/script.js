@@ -91,6 +91,10 @@ assessmentForm.addEventListener("submit", async (e) => {
     showFormError("Please enter your name and a valid email address.");
     return;
   }
+  if (!assessmentForm.elements["address"].value.trim()) {
+    showFormError("Please enter your address.");
+    return;
+  }
   const bpEl = assessmentForm.elements["bp"];
   if (bpEl.value && !bpEl.validity.valid) {
     showFormError("Write blood pressure like 120/80.");
