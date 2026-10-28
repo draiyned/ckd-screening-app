@@ -192,6 +192,50 @@
     box.innerHTML = svg;
   }
 
+  /* items: [{key, label, count}]. Draws a pie with a percentage on each slice and a legend. */
+  function pieChart(box, items) {
+    box.innerHTML = "";
+    const total = items.reduce((s, i) => s + i.count, 0);
+    if (!total) return emptyChart(box, "No screenings yet.");
+
+    const C = 100, R = 90;
+    const shown = items.filter((i) => i.count > 0);
+    let svg = `<svg viewBox="0 0 200 200" role="img" aria-label="Share of screenings by risk level">`;
+    if (shown.length === 1) {
+      svg += `<circle class="pie-${shown[0].key}" cx="${C}" cy="${C}" r="${R}"/>`;
+      svg += `<text class="pie-pct" x="${C}" y="${C + 5}" text-anchor="middle">100%</text>`;
+    } else {
+      let a0 = -Math.PI / 2;
+      shown.forEach((it) => {
+        const frac = it.count / total;
+        const a1 = a0 + frac * 2 * Math.PI;
+        const p = (a) => `${(C + R * Math.cos(a)).toFixed(2)} ${(C + R * Math.sin(a)).toFixed(2)}`;
+        svg += `<path class="pie-${it.key}" d="M ${C} ${C} L ${p(a0)} A ${R} ${R} 0 ${frac > 0.5 ? 1 : 0} 1 ${p(a1)} Z"><title>${it.label}: ${it.count}</title></path>`;
+        if (frac >= 0.06) {
+          const am = (a0 + a1) / 2;
+          svg += `<text class="pie-pct" x="${(C + R * 0.62 * Math.cos(am)).toFixed(1)}" y="${(C + R * 0.62 * Math.sin(am) + 5).toFixed(1)}" text-anchor="middle">${Math.round(frac * 100)}%</text>`;
+        }
+        a0 = a1;
+      });
+    }
+    svg += "</svg>";
+
+    const wrap = el("div", null, "pie-wrap");
+    const pie = el("div", null, "pie");
+    pie.innerHTML = svg; // built only from numbers and fixed labels
+    wrap.appendChild(pie);
+    const legend = el("ul", null, "pie-legend");
+    items.forEach((it) => {
+      const li = el("li");
+      li.appendChild(el("i", null, "pie-sw pie-" + it.key));
+      li.appendChild(el("span", it.label));
+      li.appendChild(el("strong", `${Math.round((it.count / total) * 100)}% (${it.count})`));
+      legend.appendChild(li);
+    });
+    wrap.appendChild(legend);
+    box.appendChild(wrap);
+  }
+
   /* ---------------- Dashboard ---------------- */
   let statsCache = { at: 0, data: null };
 
@@ -232,22 +276,11 @@
     $("#st-high").textContent = d.by_risk.high;
     $("#st-appts").textContent = d.appointments;
 
-    const rows = $("#chart-risk");
-    rows.innerHTML = "";
-    const top = Math.max(1, d.by_risk.low, d.by_risk.moderate, d.by_risk.high);
-    ["low", "moderate", "high"].forEach((k) => {
-      const n = d.by_risk[k];
-      const pct = d.total ? Math.round((n / d.total) * 100) : 0;
-      const row = el("div", null, "bar-row");
-      row.appendChild(el("span", k[0].toUpperCase() + k.slice(1)));
-      const track = el("div", null, "bar-track");
-      const fill = el("div", null, "bar-fill " + k);
-      fill.style.width = (n / top) * 100 + "%";
-      track.appendChild(fill);
-      row.appendChild(track);
-      row.appendChild(el("span", `${n} (${pct}%)`, "bar-val"));
-      rows.appendChild(row);
-    });
+    pieChart($("#chart-risk"), [
+      { key: "low", label: "Low risk", count: d.by_risk.low },
+      { key: "moderate", label: "Moderate risk", count: d.by_risk.moderate },
+      { key: "high", label: "High risk", count: d.by_risk.high },
+    ]);
 
     barChart(
       $("#chart-weekly"),
@@ -570,7 +603,121 @@
         : `Based on ${n} readings over ${months} months. Treat it as a rough guide only.`;
   }
 
-  onEnter.forecasting = renderForecast;
+  /* ---- Population forecast: all moderate and high risk screenings on this site, up to 2100 ---- */
+  // Levels are set by this project for illustration. They are not clinical or government thresholds.
+  const POP_ZONES = [
+    { key: "normal", label: "Normal", from: 0 },
+    { key: "caution", label: "Caution", from: 1000 },
+    { key: "warning", label: "Warning", from: 5000 },
+    { key: "risk", label: "At risk", from: 20000 },
+  ];
+  const zoneOf = (v) => POP_ZONES.slice().reverse().find((z) => v >= z.from);
+  const fmtN = (v) => Math.round(v).toLocaleString("en-US");
+
+  function popChart(box, series, ymax, endYear, startYear) {
+    const W = 600, H = 260, L = 56, R = 14, T = 12, B = 30;
+    const ticks = niceTicks(0, ymax, 4);
+    ymax = ticks[ticks.length - 1];
+    const x = (yr) => L + ((yr - startYear) / (endYear - startYear)) * (W - L - R);
+    const y = (v) => T + (1 - Math.min(v, ymax) / ymax) * (H - T - B);
+    let svg = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Projected total of moderate and high risk screenings up to ${endYear}">`;
+    POP_ZONES.forEach((z, i) => {
+      if (z.from >= ymax) return;
+      const top = i + 1 < POP_ZONES.length ? Math.min(POP_ZONES[i + 1].from, ymax) : ymax;
+      svg += `<rect class="zone-${z.key}" x="${L}" y="${y(top)}" width="${W - L - R}" height="${y(z.from) - y(top)}"/>`;
+    });
+    ticks.forEach((v) => {
+      svg += `<line class="ax" x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}"/>`;
+      svg += `<text class="ax-text" x="${L - 6}" y="${y(v) + 4}" text-anchor="end">${fmtN(v)}</text>`;
+    });
+    for (let i = 0; i < 4; i++) {
+      const yr = startYear + ((endYear - startYear) * i) / 3;
+      const anchor = i === 0 ? "start" : i === 3 ? "end" : "middle";
+      svg += `<text class="ax-text" x="${x(yr)}" y="${H - 8}" text-anchor="${anchor}">${Math.round(yr)}</text>`;
+    }
+    svg += `<polyline class="ln ln-blue" points="${series.map((p) => `${x(p.yr).toFixed(1)},${y(p.v).toFixed(1)}`).join(" ")}"/>`;
+    [series[0], series[series.length - 1]].forEach((p) => {
+      svg += `<circle class="pt-blue" cx="${x(p.yr).toFixed(1)}" cy="${y(p.v).toFixed(1)}" r="4"><title>${Math.round(p.yr)}: about ${fmtN(p.v)}</title></circle>`;
+    });
+    svg += "</svg>";
+    box.innerHTML = svg;
+  }
+
+  async function renderPopForecast() {
+    const note = $("#pop-state");
+    const body = $("#pop-body");
+    let d = statsCache.data && Date.now() - statsCache.at < 60000 ? statsCache.data : null;
+    if (!d) {
+      note.textContent = "Loading statistics...";
+      note.className = "notice notice-info";
+      body.classList.add("hidden");
+      const ctrl = new AbortController();
+      const timer = setTimeout(() => ctrl.abort(), 20000);
+      try {
+        const res = await fetch(`${API}/stats`, { signal: ctrl.signal });
+        if (!res.ok) {
+          let detail = "";
+          try { detail = (await res.json()).detail || ""; } catch (e2) { /* not JSON */ }
+          throw new Error(`Error ${res.status}${detail ? ": " + String(detail).slice(0, 160) : ""}`);
+        }
+        d = await res.json();
+        statsCache = { at: Date.now(), data: d };
+      } catch (err) {
+        note.textContent = "Could not load the statistics. " + (err.name === "AbortError" ? "(The server took too long.) " : "(" + err.message + ") ") + "Open this page again in a moment.";
+        note.className = "notice notice-warn";
+        clearTimeout(timer);
+        return;
+      }
+      clearTimeout(timer);
+    }
+
+    const atRisk = d.by_risk.moderate + d.by_risk.high;
+    const weeks = d.weekly || [];
+    const firstIdx = weeks.findIndex((w) => w.count > 0);
+    if (!d.total || firstIdx < 0) {
+      note.textContent = "No screenings yet, so there is nothing to project. Take the screening on the Home page.";
+      note.className = "notice notice-info";
+      body.classList.add("hidden");
+      return;
+    }
+    note.className = "notice hidden";
+    body.classList.remove("hidden");
+
+    const activeWeeks = weeks.length - firstIdx;
+    const recent = weeks.slice(firstIdx).reduce((s, w) => s + w.count, 0);
+    const share = atRisk / d.total;
+    const perYear = (recent / activeWeeks) * share * 52.18;
+
+    const startYear = new Date().getFullYear() + new Date().getMonth() / 12;
+    const endYear = 2100;
+    const valueAt = (yr) => atRisk + perYear * (yr - startYear);
+    const series = [startYear, 2030, 2050, 2075, endYear].filter((yr) => yr >= startYear).map((yr) => ({ yr, v: valueAt(yr) }));
+    const final = valueAt(endYear);
+    const ymax = Math.max(final * 1.1, POP_ZONES[1].from * 1.5, atRisk * 1.2);
+
+    popChart($("#chart-pop"), series, ymax, endYear, startYear);
+
+    $("#pf-now").textContent = fmtN(atRisk);
+    $("#pf-share").textContent = `${Math.round(share * 100)}% of ${fmtN(d.total)} screenings`;
+    $("#pf-pace").textContent = fmtN(perYear);
+    const zone = zoneOf(final);
+    $("#pf-level").textContent = zone.label;
+    $("#pf-2100").textContent = `about ${fmtN(final)} in 2100`;
+
+    const crossings = POP_ZONES.slice(1).map((z) => {
+      if (atRisk >= z.from) return `${z.label} (${fmtN(z.from)}): already reached.`;
+      if (perYear <= 0) return `${z.label} (${fmtN(z.from)}): not reached.`;
+      const yr = startYear + (z.from - atRisk) / perYear;
+      return yr > endYear ? `${z.label} (${fmtN(z.from)}): not reached by 2100.` : `${z.label} (${fmtN(z.from)}): around ${Math.round(yr)}.`;
+    });
+    $("#pf-summary").textContent = "At this pace: " + crossings.join(" ");
+    $("#pf-conf").textContent = `Based on ${fmtN(d.total)} screenings (${fmtN(atRisk)} at moderate or high risk) over ${activeWeeks} week(s). It assumes the same pace every year until 2100, so it ignores growth, population change, and treatment. These are people who chose to use this site, not all CKD cases in the Philippines. The Caution, Warning, and At risk levels are set by this project for illustration.`;
+  }
+
+  onEnter.forecasting = function () {
+    renderForecast();
+    renderPopForecast();
+  };
 
   /* ---------------- Referral ---------------- */
   function buildSummary() {
@@ -717,6 +864,13 @@
         const p = el("p");
         const a = el("a", c.phone);
         a.href = "tel:" + String(c.phone).replace(/[^\d+]/g, "");
+        p.appendChild(a);
+        card.appendChild(p);
+      }
+      if (c.email) {
+        const p = el("p");
+        const a = el("a", c.email);
+        a.href = "mailto:" + encodeURIComponent(c.email).replace(/%40/g, "@");
         p.appendChild(a);
         card.appendChild(p);
       }

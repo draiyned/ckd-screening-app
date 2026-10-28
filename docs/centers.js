@@ -9,6 +9,7 @@
 //     city: "Koronadal City",
 //     address: "Street, Barangay, City",
 //     phone: "0900 000 0000",
+//     email: "dialysis@example.com",   // shown as a link people can tap to send an email
 //     philhealth: true,          // true, false, or leave out if you do not know
 //     note: "Mon to Sat, 6 AM to 6 PM. Call first."
 //   },

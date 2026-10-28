@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>CKD Risk Screening</title>
 <meta name="description" content="A preliminary chronic kidney disease (CKD) risk screening tool. It does not diagnose CKD.">
-<link rel="stylesheet" href="style.css?v=6">
+<link rel="stylesheet" href="style.css?v=7">
 </head>
 <body>
 
@@ -267,7 +267,8 @@
   <div class="two-col">
     <article class="card">
       <h2>Risk levels</h2>
-      <div id="chart-risk" class="bars"></div>
+      <p class="muted small">Share of all screenings</p>
+      <div id="chart-risk" class="chart"></div>
     </article>
     <article class="card">
       <h2>Screenings per week</h2>
@@ -353,10 +354,35 @@
 <section id="tab-forecasting" class="tab-section">
   <div class="page-head">
     <h1>Forecasting</h1>
-    <p>See where your eGFR may be heading if your recent trend continues. It uses the readings in your Monitoring log.</p>
+    <p>See where screenings on this site are heading, and where your own eGFR may be heading if your recent trend continues.</p>
   </div>
 
-  <div class="notice notice-warn"><strong>Read this first.</strong> This is a simple straight-line projection of your own readings. It is not a medical prediction. Real kidney function changes with illness, medicine, and treatment. Only a doctor can interpret your results.</div>
+  <div class="notice notice-warn"><strong>Read this first.</strong> Both charts are simple straight-line projections. It is not a medical prediction. Real kidney function changes with illness, medicine, and treatment. Only a doctor can interpret your results.</div>
+
+  <article class="card" id="pop-card">
+    <h2>Everyone who used this site, up to 2100</h2>
+    <p class="muted small">Total moderate and high risk screenings, if the recent pace continues. This counts screenings on this site, not all CKD cases in the Philippines.</p>
+    <div id="pop-state" class="notice hidden"></div>
+    <div id="pop-body" class="hidden">
+      <div class="stat-grid fc-stats">
+        <article class="card stat"><span class="stat-label">At risk so far</span><strong id="pf-now">–</strong><small id="pf-share"></small></article>
+        <article class="card stat"><span class="stat-label">Pace</span><strong id="pf-pace">–</strong><small>per year</small></article>
+        <article class="card stat"><span class="stat-label">Level in 2100</span><strong id="pf-level">–</strong><small id="pf-2100"></small></article>
+      </div>
+      <div class="legend">
+        <span><i class="zone-sw zone-normal"></i>Normal</span>
+        <span><i class="zone-sw zone-caution"></i>Caution</span>
+        <span><i class="zone-sw zone-warning"></i>Warning</span>
+        <span><i class="zone-sw zone-risk"></i>At risk</span>
+        <span><i class="lg lg-solid"></i>Projected total</span>
+      </div>
+      <div id="chart-pop" class="chart"></div>
+      <p id="pf-summary" class="fc-summary"></p>
+      <p id="pf-conf" class="muted small"></p>
+    </div>
+  </article>
+
+  <h2 class="sub-head">Your own eGFR</h2>
 
   <div id="fc-empty" class="card hidden">
     <h2>Not enough readings yet</h2>
@@ -586,9 +612,9 @@
 
 </main>
 
-<script src="script.js?v=6"></script>
-<script src="centers.js?v=6"></script>
-<script src="app.js?v=6"></script>
-<script src="chat.js?v=6"></script>
+<script src="script.js?v=7"></script>
+<script src="centers.js?v=7"></script>
+<script src="app.js?v=7"></script>
+<script src="chat.js?v=7"></script>
 </body>
 </html>
