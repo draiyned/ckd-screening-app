@@ -19,7 +19,7 @@ class AssessmentInput(BaseModel):
     name: Optional[str] = Field(None, max_length=100)
     email: Optional[str] = Field(None, max_length=254)
     address: Optional[str] = Field(None, max_length=200)
-    age: Optional[float] = Field(None, ge=0, le=120)
+    age: Optional[float] = Field(None, ge=16, le=25)
     sex: Optional[str] = Field(None, max_length=20)
     blood_type: Optional[str] = Field(None, max_length=3)
     last_checkup: Optional[str] = Field(None, max_length=10)

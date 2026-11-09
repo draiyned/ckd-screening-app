@@ -269,7 +269,7 @@
     }
   }
 
-  const AGE_ORDER = ["u30", "30_44", "45_59", "60p", "unknown"];
+  const AGE_ORDER = ["16_18", "19_21", "22_25", "unknown"];
   const pct = (n, t) => (t ? Math.round((n / t) * 100) : 0);
 
   function renderAge(d) {
@@ -283,8 +283,8 @@
     const items = AGE_ORDER.map((k, i) => {
       const g = d.by_age[k] || { low: 0, moderate: 0, high: 0 };
       return {
-        key: "age" + i,
-        label: k === "unknown" ? "Age not given" : labels[k] || k,
+        key: k === "unknown" ? "age4" : "age" + i,
+        label: k === "unknown" ? "Other or not given" : labels[k] || k,
         count: g.low + g.moderate + g.high,
         atRisk: g.moderate + g.high,
       };

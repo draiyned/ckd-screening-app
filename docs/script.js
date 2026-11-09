@@ -95,6 +95,11 @@ assessmentForm.addEventListener("submit", async (e) => {
     showFormError("Please enter your address.");
     return;
   }
+  const ageNum = Number(assessmentForm.elements["age"].value);
+  if (!assessmentForm.elements["age"].value || !Number.isInteger(ageNum) || ageNum < 16 || ageNum > 25) {
+    showFormError("This screening is for ages 16 to 25. Please enter a whole number from 16 to 25.");
+    return;
+  }
   const bpEl = assessmentForm.elements["bp"];
   if (bpEl.value && !bpEl.validity.valid) {
     showFormError("Write blood pressure like 120/80.");
