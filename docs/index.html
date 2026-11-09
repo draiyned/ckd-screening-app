@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>CKD Risk Screening</title>
 <meta name="description" content="A preliminary chronic kidney disease (CKD) risk screening tool. It does not diagnose CKD.">
-<link rel="stylesheet" href="style.css?v=9">
+<link rel="stylesheet" href="style.css?v=10">
 </head>
 <body>
 
@@ -15,7 +15,7 @@
     <symbol id="i-home" viewBox="0 0 24 24"><path d="M3 11l9-8 9 8v10a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></symbol>
     <symbol id="i-dashboard" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></symbol>
     <symbol id="i-monitoring" viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></symbol>
-    <symbol id="i-forecasting" viewBox="0 0 24 24"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></symbol>
+    <symbol id="i-feedback" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></symbol>
     <symbol id="i-referral" viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><polyline points="14 3 14 8 19 8"/><path d="M9 14h6M9 17h4"/></symbol>
     <symbol id="i-centers" viewBox="0 0 24 24"><path d="M3 21V7l9-4 9 4v14"/><path d="M12 9v6M9 12h6"/><path d="M3 21h18"/></symbol>
     <symbol id="i-about" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></symbol>
@@ -46,7 +46,7 @@
     <button class="nav-btn" data-tab="home" type="button"><svg class="ico"><use href="#i-home"/></svg><span>Home</span></button>
     <button class="nav-btn" data-tab="dashboard" type="button"><svg class="ico"><use href="#i-dashboard"/></svg><span>Dashboard</span></button>
     <button class="nav-btn" data-tab="monitoring" type="button"><svg class="ico"><use href="#i-monitoring"/></svg><span>Monitoring</span></button>
-    <button class="nav-btn" data-tab="forecasting" type="button"><svg class="ico"><use href="#i-forecasting"/></svg><span>Forecasting</span></button>
+    <button class="nav-btn" data-tab="feedback" type="button"><svg class="ico"><use href="#i-feedback"/></svg><span>Feedback</span></button>
     <button class="nav-btn" data-tab="referral" type="button"><svg class="ico"><use href="#i-referral"/></svg><span>Referral</span></button>
     <button class="nav-btn" data-tab="centers" type="button"><svg class="ico"><use href="#i-centers"/></svg><span>Dialysis Centers</span></button>
     <button class="nav-btn" data-tab="about" type="button"><svg class="ico"><use href="#i-about"/></svg><span>About Us</span></button>
@@ -280,6 +280,20 @@
     </article>
   </div>
 
+  <div class="two-col">
+    <article class="card">
+      <h2>Age groups</h2>
+      <p class="muted small">Share of all screenings</p>
+      <div id="chart-age" class="chart"></div>
+    </article>
+    <article class="card">
+      <h2>Summary</h2>
+      <p class="muted small">Written from the numbers on this page</p>
+      <ul id="dash-summary" class="list"></ul>
+      <p id="dash-summary-note" class="muted small"></p>
+    </article>
+  </div>
+
   <article class="card">
     <div class="row-between">
       <h2>My screenings on this device</h2>
@@ -353,83 +367,35 @@
   </article>
 </section>
 
-<!-- ============ FORECASTING ============ -->
-<section id="tab-forecasting" class="tab-section">
+<!-- ============ FEEDBACK ============ -->
+<section id="tab-feedback" class="tab-section">
   <div class="page-head">
-    <h1>Forecasting</h1>
-    <p>See where screenings on this site are heading, and where your own eGFR may be heading if your recent trend continues.</p>
+    <h1>Feedback</h1>
+    <p>Tell us how easy this website was to use. It takes about 3 minutes. Your answers are anonymous.</p>
   </div>
 
-  <div class="notice notice-warn"><strong>Read this first.</strong> Both charts are simple straight-line projections. It is not a medical prediction. Real kidney function changes with illness, medicine, and treatment. Only a doctor can interpret your results.</div>
-
-  <article class="card" id="pop-card">
-    <h2>Everyone who used this site, over the years</h2>
-    <p class="muted small">Total moderate and high risk screenings, if the recent pace continues. This counts screenings on this site, not all CKD cases in the Philippines.</p>
-    <div id="pop-state" class="notice hidden"></div>
-    <div id="pop-body" class="hidden">
-      <div class="stat-grid fc-stats">
-        <article class="card stat"><span class="stat-label">At risk so far</span><strong id="pf-now">–</strong><small id="pf-share"></small></article>
-        <article class="card stat"><span class="stat-label">Pace</span><strong id="pf-pace">–</strong><small>per year</small></article>
-        <article class="card stat"><span class="stat-label">Level at the end</span><strong id="pf-level">–</strong><small id="pf-2100"></small></article>
-      </div>
-      <div class="legend">
-        <span><i class="zone-sw zone-normal"></i>Normal</span>
-        <span><i class="zone-sw zone-caution"></i>Caution</span>
-        <span><i class="zone-sw zone-warning"></i>Warning</span>
-        <span><i class="zone-sw zone-risk"></i>At risk</span>
-        <span><i class="lg lg-solid"></i>Projected total</span>
-      </div>
-      <div id="chart-pop" class="chart"></div>
-      <p id="pf-summary" class="fc-summary"></p>
-      <p id="pf-conf" class="muted small"></p>
+  <article class="card" id="fb-card">
+    <p class="scale-legend"><strong>How to answer:</strong> 5 Strongly agree, 4 Agree, 3 Neutral, 2 Disagree, 1 Strongly disagree.</p>
+    <form id="feedback-form" novalidate>
+      <div id="fb-sections"></div>
+      <label>Comments or suggestions (optional)
+        <textarea id="fb-comment" maxlength="500" rows="3"></textarea>
+      </label>
+      <div id="fb-error" class="notice notice-warn hidden"></div>
+      <button class="btn btn-primary" type="submit" id="fb-submit">Send feedback</button>
+    </form>
+    <div id="fb-thanks" class="hidden">
+      <p class="ok-msg" id="fb-thanks-msg"></p>
+      <button class="btn btn-outline" type="button" id="fb-again">Send another response</button>
     </div>
   </article>
 
-  <h2 class="sub-head">Your own eGFR</h2>
-
-  <div id="fc-empty" class="card hidden">
-    <h2>Not enough readings yet</h2>
-    <p>Add at least 2 eGFR readings on different dates in Monitoring. Three or more readings over 3 months or longer give a more useful trend.</p>
-    <button class="btn btn-primary" type="button" data-go="monitoring">Go to Monitoring</button>
-  </div>
-
-  <div id="fc-body" class="hidden">
-    <div class="stat-grid fc-stats">
-      <article class="card stat"><span class="stat-label">Latest eGFR</span><strong id="fc-latest">–</strong><small id="fc-stage"></small></article>
-      <article class="card stat"><span class="stat-label">Your trend</span><strong id="fc-slope">–</strong><small>per year</small></article>
-      <article class="card stat"><span class="stat-label">In 1 year</span><strong id="fc-1y">–</strong></article>
-      <article class="card stat"><span class="stat-label">In 3 years</span><strong id="fc-3y">–</strong></article>
-      <article class="card stat"><span class="stat-label">In 5 years</span><strong id="fc-5y">–</strong></article>
-    </div>
-
-    <article class="card">
-      <h2>eGFR projection</h2>
-      <div class="legend">
-        <span><i class="lg lg-solid"></i>Your readings</span>
-        <span><i class="lg lg-dash-blue"></i>Your trend continued</span>
-        <span><i class="lg lg-dash-grey"></i>Typical aging decline (about 1 per year)</span>
-      </div>
-      <div id="chart-fc" class="chart"></div>
-      <p id="fc-summary" class="fc-summary"></p>
-      <p id="fc-conf" class="muted small"></p>
-    </article>
-
-    <article class="card">
-      <h2>eGFR stages</h2>
-      <div class="table-wrap">
-        <table class="plain">
-          <tr><th>Stage</th><th>eGFR</th><th>Meaning</th></tr>
-          <tr><td>G1</td><td>90 or above</td><td>Normal or high</td></tr>
-          <tr><td>G2</td><td>60 to 89</td><td>Mildly decreased</td></tr>
-          <tr><td>G3a</td><td>45 to 59</td><td>Mild to moderate decrease</td></tr>
-          <tr><td>G3b</td><td>30 to 44</td><td>Moderate to severe decrease</td></tr>
-          <tr><td>G4</td><td>15 to 29</td><td>Severe decrease</td></tr>
-          <tr><td>G5</td><td>below 15</td><td>Kidney failure range</td></tr>
-        </table>
-      </div>
-      <p class="muted small">Stages follow the KDIGO guideline. A diagnosis needs results that stay low for 3 months or more, plus a doctor's review.</p>
-    </article>
-  </div>
+  <article class="card" id="fb-results">
+    <h2>Results so far</h2>
+    <p class="muted small" id="fb-count"></p>
+    <div id="fb-summary"></div>
+    <p class="muted small">Average meaning: 4.21 to 5.00 Strongly agree, 3.41 to 4.20 Agree, 2.61 to 3.40 Neutral, 1.81 to 2.60 Disagree, 1.00 to 1.80 Strongly disagree.</p>
+  </article>
 </section>
 
 <!-- ============ REFERRAL ============ -->
@@ -630,9 +596,9 @@
 
 </main>
 
-<script src="script.js?v=9"></script>
-<script src="centers.js?v=9"></script>
-<script src="app.js?v=9"></script>
-<script src="chat.js?v=9"></script>
+<script src="script.js?v=10"></script>
+<script src="centers.js?v=10"></script>
+<script src="app.js?v=10"></script>
+<script src="chat.js?v=10"></script>
 </body>
 </html>

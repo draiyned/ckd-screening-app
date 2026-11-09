@@ -1,9 +1,9 @@
-/* Navigation, Dashboard, Monitoring, Forecasting, Referral and Dialysis Centers.
+/* Navigation, Dashboard, Monitoring, Feedback, Referral and Dialysis Centers.
    Depends on script.js (API_BASE, loadJSON, saveJSON) and centers.js (PARTNER_CENTERS). */
 (function () {
   "use strict";
 
-  const TABS = ["home", "dashboard", "monitoring", "forecasting", "referral", "centers", "about"];
+  const TABS = ["home", "dashboard", "monitoring", "feedback", "referral", "centers", "about"];
   const API = typeof API_BASE !== "undefined" ? API_BASE : "https://ckd-screening-app.vercel.app/api";
   const LOG_KEY = "ckd_log_v1";
   const DAY = 86400000;
@@ -193,14 +193,14 @@
   }
 
   /* items: [{key, label, count}]. Draws a pie with a percentage on each slice and a legend. */
-  function pieChart(box, items) {
+  function pieChart(box, items, aria) {
     box.innerHTML = "";
     const total = items.reduce((s, i) => s + i.count, 0);
     if (!total) return emptyChart(box, "No screenings yet.");
 
     const C = 100, R = 90;
     const shown = items.filter((i) => i.count > 0);
-    let svg = `<svg viewBox="0 0 200 200" role="img" aria-label="Share of screenings by risk level">`;
+    let svg = `<svg viewBox="0 0 200 200" role="img" aria-label="${aria || "Pie chart"}">`;
     if (shown.length === 1) {
       svg += `<circle class="pie-${shown[0].key}" cx="${C}" cy="${C}" r="${R}"/>`;
       svg += `<text class="pie-pct" x="${C}" y="${C + 5}" text-anchor="middle">100%</text>`;
@@ -269,6 +269,56 @@
     }
   }
 
+  const AGE_ORDER = ["u30", "30_44", "45_59", "60p", "unknown"];
+  const pct = (n, t) => (t ? Math.round((n / t) * 100) : 0);
+
+  function renderAge(d) {
+    const box = $("#chart-age");
+    if (!d.by_age) {
+      box.innerHTML = "";
+      box.appendChild(el("p", "Age data is not available yet.", "muted small"));
+      return [];
+    }
+    const labels = d.age_labels || {};
+    const items = AGE_ORDER.map((k, i) => {
+      const g = d.by_age[k] || { low: 0, moderate: 0, high: 0 };
+      return {
+        key: "age" + i,
+        label: k === "unknown" ? "Age not given" : labels[k] || k,
+        count: g.low + g.moderate + g.high,
+        atRisk: g.moderate + g.high,
+      };
+    }).filter((it) => it.key !== "age4" || it.count > 0);
+    pieChart(box, items, "Share of screenings by age group");
+    return items;
+  }
+
+  function renderSummary(d, ageItems) {
+    const list = $("#dash-summary");
+    list.innerHTML = "";
+    const t = d.total;
+    if (!t) {
+      list.appendChild(el("li", "No screenings yet."));
+      $("#dash-summary-note").textContent = "";
+      return;
+    }
+    const r = d.by_risk;
+    const atRisk = r.moderate + r.high;
+    list.appendChild(el("li", `Out of ${t} screenings, ${pct(r.low, t)}% (${r.low}) were low risk, ${pct(r.moderate, t)}% (${r.moderate}) moderate risk, and ${pct(r.high, t)}% (${r.high}) high risk.`));
+    if (atRisk > 0) list.appendChild(el("li", `${atRisk} screenings (${pct(atRisk, t)}%) were moderate or high risk. These people are advised to see a doctor for a proper kidney check.`));
+
+    const known = ageItems.filter((it) => it.key !== "age4");
+    const knownTotal = known.reduce((s, it) => s + it.count, 0);
+    if (knownTotal > 0) {
+      const top = known.slice().sort((a, b) => b.count - a.count)[0];
+      list.appendChild(el("li", `The largest age group is ${top.label} (${top.count} screenings, ${pct(top.count, knownTotal)}% of screenings with a known age).`));
+      const worst = known.filter((it) => it.count >= 5).sort((a, b) => b.atRisk / b.count - a.atRisk / a.count)[0];
+      if (worst && worst.atRisk > 0) list.appendChild(el("li", `The share at moderate or high risk is highest in the ${worst.label} group (${pct(worst.atRisk, worst.count)}%).`));
+    }
+    list.appendChild(el("li", `${d.appointments} appointment request${d.appointments === 1 ? " was" : "s were"} saved.`));
+    $("#dash-summary-note").textContent = "This covers only people who chose to use this site. It is not a study of how common kidney disease is. The platform does not diagnose.";
+  }
+
   function renderStats(d) {
     $("#st-total").textContent = d.total;
     $("#st-low").textContent = d.by_risk.low;
@@ -280,7 +330,10 @@
       { key: "low", label: "Low risk", count: d.by_risk.low },
       { key: "moderate", label: "Moderate risk", count: d.by_risk.moderate },
       { key: "high", label: "High risk", count: d.by_risk.high },
-    ]);
+    ], "Share of screenings by risk level");
+
+    const ageItems = renderAge(d);
+    renderSummary(d, ageItems);
 
     barChart(
       $("#chart-weekly"),
@@ -520,204 +573,187 @@
 
   onEnter.monitoring = renderMonitoring;
 
-  /* ---------------- Forecasting ---------------- */
-  function renderForecast() {
-    const list = getLog().filter((r) => r.egfr !== undefined);
-    const empty = $("#fc-empty");
-    const body = $("#fc-body");
+  /* ---------------- Feedback ---------------- */
+  const FB_SECTIONS = [
+    { title: "Website Accessibility and Navigation", items: [
+      "I can open the website without difficulty.",
+      "I can easily understand the homepage.",
+      "I can easily find the features I need.",
+      "The menus and buttons are easy to find.",
+      "The website works properly on the device I am using.",
+    ] },
+    { title: "AI Assistive Model Functionality", items: [
+      "I can easily access and use the AI assistive model.",
+      "The AI responds whenever I submit a question.",
+      "The AI\u2019s answers are easy to understand.",
+      "The AI gives answers related to the questions I ask.",
+      "I can ask follow-up questions without starting a new session.",
+      "The AI responds without taking too much time.",
+      "It is easy to type questions and read the AI\u2019s answers.",
+    ] },
+    { title: "User Interface and Experience", items: [
+      "The website looks clean and organized.",
+      "The instructions and labels are easy to understand.",
+      "The buttons and icons are easy to recognize.",
+      "The text and information are easy to read.",
+      "I can use the website without needing much assistance.",
+      "I find the website comfortable and convenient to use.",
+    ] },
+    { title: "Overall Evaluation", items: [
+      "Overall, I am satisfied with how the website works.",
+      "The website does what I expect it to do.",
+      "I find the website easy to use.",
+      "I did not have much difficulty using the website.",
+      "I would recommend the website to other users.",
+    ] },
+  ];
 
-    const first = list.length ? isoToTime(list[0].date) : 0;
-    const last = list.length ? isoToTime(list[list.length - 1].date) : 0;
-    if (list.length < 2 || last - first < DAY) {
-      empty.classList.remove("hidden");
-      body.classList.add("hidden");
+  function buildFeedbackForm() {
+    const box = $("#fb-sections");
+    box.innerHTML = "";
+    FB_SECTIONS.forEach((sec, si) => {
+      const set = el("fieldset", null, "fb-sec");
+      set.appendChild(el("legend", `${si + 1}. ${sec.title}`));
+      sec.items.forEach((text, i) => {
+        const row = el("div", null, "fb-row");
+        row.dataset.key = si + "_" + i;
+        row.appendChild(el("p", `${i + 1}. ${text}`, "fb-q"));
+        const opts = el("div", null, "fb-opts");
+        [5, 4, 3, 2, 1].forEach((v) => {
+          const lab = el("label", null, "fb-opt");
+          const inp = document.createElement("input");
+          inp.type = "radio";
+          inp.name = "s" + si + "_" + i;
+          inp.value = String(v);
+          lab.appendChild(inp);
+          lab.appendChild(el("span", String(v)));
+          opts.appendChild(lab);
+        });
+        row.appendChild(opts);
+        set.appendChild(row);
+      });
+      box.appendChild(set);
+    });
+  }
+  buildFeedbackForm();
+
+  function showFbError(msg) {
+    const n = $("#fb-error");
+    n.textContent = msg;
+    n.classList.toggle("hidden", !msg);
+  }
+
+  $("#feedback-form").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    showFbError("");
+    $$("#feedback-form .fb-row").forEach((r) => r.classList.remove("missing"));
+    const answers = [];
+    let firstMissing = null;
+    FB_SECTIONS.forEach((sec, si) => {
+      const row = [];
+      sec.items.forEach((_t, i) => {
+        const picked = $(`input[name="s${si}_${i}"]:checked`);
+        if (!picked) {
+          const r = $(`.fb-row[data-key="${si}_${i}"]`);
+          r.classList.add("missing");
+          if (!firstMissing) firstMissing = r;
+          row.push(0);
+        } else row.push(Number(picked.value));
+      });
+      answers.push(row);
+    });
+    if (firstMissing) {
+      showFbError("Please answer every statement. The ones you missed are outlined in red.");
+      firstMissing.scrollIntoView({ block: "center" });
       return;
     }
-    empty.classList.add("hidden");
-    body.classList.remove("hidden");
-
-    // Straight-line fit: eGFR = a + b * years
-    const xs = list.map((r) => (isoToTime(r.date) - first) / YEAR);
-    const ys = list.map((r) => r.egfr);
-    const n = xs.length;
-    const mx = xs.reduce((a, b) => a + b, 0) / n;
-    const my = ys.reduce((a, b) => a + b, 0) / n;
-    let num = 0, den = 0;
-    for (let i = 0; i < n; i++) {
-      num += (xs[i] - mx) * (ys[i] - my);
-      den += (xs[i] - mx) * (xs[i] - mx);
+    const btn = $("#fb-submit");
+    btn.disabled = true;
+    btn.textContent = "Sending...";
+    try {
+      const res = await fetch(`${API}/feedback`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ answers, comment: $("#fb-comment").value.trim() || null }),
+      });
+      if (res.status === 429) throw new Error("Too many attempts. Please wait a few minutes and try again.");
+      if (!res.ok) {
+        let detail = "";
+        try { detail = (await res.json()).detail || ""; } catch (e2) { /* not JSON */ }
+        throw new Error(typeof detail === "string" && detail ? detail : "Could not send your feedback. Please try again.");
+      }
+      $("#feedback-form").classList.add("hidden");
+      $("#fb-thanks-msg").textContent = "Thank you. Your feedback was saved.";
+      $("#fb-thanks").classList.remove("hidden");
+      loadFeedbackSummary();
+    } catch (err) {
+      showFbError(err.message || "Could not send your feedback. Please try again.");
+    } finally {
+      btn.disabled = false;
+      btn.textContent = "Send feedback";
     }
-    const slope = den ? num / den : 0;
+  });
 
-    const lastVal = ys[n - 1];
-    const at = (years) => Math.max(0, Math.min(150, lastVal + slope * years));
+  $("#fb-again").addEventListener("click", () => {
+    $("#feedback-form").reset();
+    $("#feedback-form").classList.remove("hidden");
+    $("#fb-thanks").classList.add("hidden");
+    window.scrollTo(0, 0);
+  });
 
-    $("#fc-latest").textContent = lastVal;
-    $("#fc-stage").textContent = "Stage " + stageOf(lastVal);
-    $("#fc-slope").textContent = (slope > 0 ? "+" : "") + slope.toFixed(1);
-    [1, 3, 5].forEach((y) => {
-      const v = at(y);
-      $("#fc-" + y + "y").textContent = `${Math.round(v)} (${stageOf(v)})`;
-    });
-
-    const proj = [], ref = [];
-    for (let y = 0; y <= 5; y++) {
-      const t = last + y * YEAR;
-      proj.push({ t, v: at(y), tip: `${fmtMonth(t)}: about ${Math.round(at(y))}` });
-      ref.push({ t, v: Math.max(0, lastVal - y), tip: `${fmtMonth(t)}: about ${Math.max(0, Math.round(lastVal - y))}` });
-    }
-    const real = list.map((r) => ({ t: isoToTime(r.date), v: r.egfr, tip: `${r.date}: ${r.egfr}` }));
-
-    lineChart($("#chart-fc"), {
-      label: "eGFR readings and projection",
-      series: [
-        { cls: "ln-ref", ptcls: "", points: ref, dots: false },
-        { cls: "ln-proj", ptcls: "", points: proj, dots: false },
-        { cls: "ln-blue", ptcls: "pt-blue", points: real },
-      ],
-      thresholds: [{ v: 60 }],
-    });
-
-    // Plain-language summary
-    let msg;
-    if (lastVal < 60) {
-      msg = `Your latest eGFR is already below 60. Please see a doctor for review. A trend line cannot replace that.`;
-    } else if (slope <= -5) {
-      msg = `Your eGFR is falling about ${Math.abs(slope).toFixed(1)} per year. A drop of more than 5 per year is considered fast. Please see a doctor soon.`;
-    } else if (slope < -0.05) {
-      const yrs = (lastVal - 60) / -slope;
-      msg = yrs <= 50
-        ? `At this pace, your eGFR would reach 60 in about ${yrs.toFixed(1)} years (around ${new Date(last + yrs * YEAR).getFullYear()}). Keep checking with your doctor.`
-        : `At this pace, your eGFR would stay above 60 for more than 50 years.`;
-    } else {
-      msg = `Your readings are steady or rising. Keep up your checkups.`;
-    }
-    $("#fc-summary").textContent = msg;
-
-    const months = Math.max(1, Math.round((last - first) / (DAY * 30.44)));
-    const weak = n < 3 || last - first < 90 * DAY;
-    $("#fc-conf").textContent = weak
-      ? `Very low confidence: only ${n} readings over ${months} month(s). A short time span exaggerates the trend. Add more readings over 3 months or longer. Lab-to-lab differences alone can move a reading by several points.`
-      : months < 12
-        ? `Based on ${n} readings over ${months} months. Under a year of data can exaggerate the trend. Treat it as a rough guide only.`
-        : `Based on ${n} readings over ${months} months. Treat it as a rough guide only.`;
+  function interpret(m) {
+    if (m >= 4.21) return "Strongly agree";
+    if (m >= 3.41) return "Agree";
+    if (m >= 2.61) return "Neutral";
+    if (m >= 1.81) return "Disagree";
+    return "Strongly disagree";
   }
 
-  /* ---- Population forecast: all moderate and high risk screenings on this site, over the long term ---- */
-  // Levels are set by this project for illustration. They are not clinical or government thresholds.
-  const POP_ZONES = [
-    { key: "normal", label: "Normal", from: 0 },
-    { key: "caution", label: "Caution", from: 1000 },
-    { key: "warning", label: "Warning", from: 5000 },
-    { key: "risk", label: "At risk", from: 20000 },
-  ];
-  const zoneOf = (v) => POP_ZONES.slice().reverse().find((z) => v >= z.from);
-  const fmtN = (v) => Math.round(v).toLocaleString("en-US");
-
-  function popChart(box, series, ymax, endYear, startYear) {
-    const W = 600, H = 260, L = 56, R = 14, T = 12, B = 30;
-    const ticks = niceTicks(0, ymax, 4);
-    ymax = ticks[ticks.length - 1];
-    const x = (yr) => L + ((yr - startYear) / (endYear - startYear)) * (W - L - R);
-    const y = (v) => T + (1 - Math.min(v, ymax) / ymax) * (H - T - B);
-    let svg = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Projected total of moderate and high risk screenings over the coming decades">`;
-    POP_ZONES.forEach((z, i) => {
-      if (z.from >= ymax) return;
-      const top = i + 1 < POP_ZONES.length ? Math.min(POP_ZONES[i + 1].from, ymax) : ymax;
-      svg += `<rect class="zone-${z.key}" x="${L}" y="${y(top)}" width="${W - L - R}" height="${y(z.from) - y(top)}"/>`;
-    });
-    ticks.forEach((v) => {
-      svg += `<line class="ax" x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}"/>`;
-      svg += `<text class="ax-text" x="${L - 6}" y="${y(v) + 4}" text-anchor="end">${fmtN(v)}</text>`;
-    });
-    for (let i = 0; i < 3; i++) {
-      const yr = startYear + ((endYear - startYear) * i) / 3;
-      const anchor = i === 0 ? "start" : "middle";
-      svg += `<text class="ax-text" x="${x(yr)}" y="${H - 8}" text-anchor="${anchor}">${Math.round(yr)}</text>`;
-    }
-    svg += `<polyline class="ln ln-blue" points="${series.map((p) => `${x(p.yr).toFixed(1)},${y(p.v).toFixed(1)}`).join(" ")}"/>`;
-    [series[0], series[series.length - 1]].forEach((p) => {
-      svg += `<circle class="pt-blue" cx="${x(p.yr).toFixed(1)}" cy="${y(p.v).toFixed(1)}" r="4"><title>${Math.round(p.yr)}: about ${fmtN(p.v)}</title></circle>`;
-    });
-    svg += "</svg>";
-    box.innerHTML = svg;
-  }
-
-  async function renderPopForecast() {
-    const note = $("#pop-state");
-    const body = $("#pop-body");
-    let d = statsCache.data && Date.now() - statsCache.at < 60000 ? statsCache.data : null;
-    if (!d) {
-      note.textContent = "Loading statistics...";
-      note.className = "notice notice-info";
-      body.classList.add("hidden");
-      const ctrl = new AbortController();
-      const timer = setTimeout(() => ctrl.abort(), 20000);
-      try {
-        const res = await fetch(`${API}/stats`, { signal: ctrl.signal });
-        if (!res.ok) {
-          let detail = "";
-          try { detail = (await res.json()).detail || ""; } catch (e2) { /* not JSON */ }
-          throw new Error(`Error ${res.status}${detail ? ": " + String(detail).slice(0, 160) : ""}`);
-        }
-        d = await res.json();
-        statsCache = { at: Date.now(), data: d };
-      } catch (err) {
-        note.textContent = "Could not load the statistics. " + (err.name === "AbortError" ? "(The server took too long.) " : "(" + err.message + ") ") + "Open this page again in a moment.";
-        note.className = "notice notice-warn";
-        clearTimeout(timer);
+  async function loadFeedbackSummary() {
+    const box = $("#fb-summary");
+    const count = $("#fb-count");
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), 20000);
+    try {
+      const res = await fetch(`${API}/feedback/summary`, { signal: ctrl.signal });
+      if (!res.ok) throw new Error("HTTP " + res.status);
+      const d = await res.json();
+      box.innerHTML = "";
+      if (!d.count) {
+        count.textContent = "No responses yet. Be the first to answer.";
         return;
       }
+      const overall = d.sections.reduce((s, x) => s + x.mean, 0) / d.sections.length;
+      count.textContent = `${d.count} response${d.count === 1 ? "" : "s"}. Overall average ${overall.toFixed(2)} (${interpret(overall)}).`;
+      d.sections.forEach((s, si) => {
+        const head = el("div", null, "fb-sum-head");
+        head.appendChild(el("strong", FB_SECTIONS[si].title));
+        head.appendChild(el("span", `${s.mean.toFixed(2)} ${interpret(s.mean)}`));
+        box.appendChild(head);
+        const track = el("div", null, "fb-bar");
+        const fill = el("div");
+        fill.style.width = (s.mean / 5) * 100 + "%";
+        track.appendChild(fill);
+        box.appendChild(track);
+        const det = document.createElement("details");
+        det.appendChild(el("summary", "Each statement"));
+        s.items.forEach((m, i) => {
+          const r = el("div", null, "fb-item");
+          r.appendChild(el("span", `${i + 1}. ${FB_SECTIONS[si].items[i]}`));
+          r.appendChild(el("strong", m.toFixed(2)));
+          det.appendChild(r);
+        });
+        box.appendChild(det);
+      });
+    } catch (err) {
+      count.textContent = "Results are not available right now.";
+      console.error(err);
+    } finally {
       clearTimeout(timer);
     }
-
-    const atRisk = d.by_risk.moderate + d.by_risk.high;
-    const weeks = d.weekly || [];
-    const firstIdx = weeks.findIndex((w) => w.count > 0);
-    if (!d.total || firstIdx < 0) {
-      note.textContent = "No screenings yet, so there is nothing to project. Take the screening on the Home page.";
-      note.className = "notice notice-info";
-      body.classList.add("hidden");
-      return;
-    }
-    note.className = "notice hidden";
-    body.classList.remove("hidden");
-
-    const activeWeeks = weeks.length - firstIdx;
-    const recent = weeks.slice(firstIdx).reduce((s, w) => s + w.count, 0);
-    const share = atRisk / d.total;
-    const perYear = (recent / activeWeeks) * share * 52.18;
-
-    const startYear = new Date().getFullYear() + new Date().getMonth() / 12;
-    const endYear = 2100;
-    const valueAt = (yr) => atRisk + perYear * (yr - startYear);
-    const series = [startYear, 2030, 2050, 2075, endYear].filter((yr) => yr >= startYear).map((yr) => ({ yr, v: valueAt(yr) }));
-    const final = valueAt(endYear);
-    const ymax = Math.max(final * 1.1, POP_ZONES[1].from * 1.5, atRisk * 1.2);
-
-    popChart($("#chart-pop"), series, ymax, endYear, startYear);
-
-    $("#pf-now").textContent = fmtN(atRisk);
-    $("#pf-share").textContent = `${Math.round(share * 100)}% of ${fmtN(d.total)} screenings`;
-    $("#pf-pace").textContent = fmtN(perYear);
-    const zone = zoneOf(final);
-    $("#pf-level").textContent = zone.label;
-    $("#pf-2100").textContent = `about ${fmtN(final)} at the end`;
-
-    const crossings = POP_ZONES.slice(1).map((z) => {
-      if (atRisk >= z.from) return `${z.label} (${fmtN(z.from)}): already reached.`;
-      if (perYear <= 0) return `${z.label} (${fmtN(z.from)}): not reached.`;
-      const yr = startYear + (z.from - atRisk) / perYear;
-      return yr > endYear ? `${z.label} (${fmtN(z.from)}): not reached in this projection.` : `${z.label} (${fmtN(z.from)}): around ${Math.round(yr)}.`;
-    });
-    $("#pf-summary").textContent = "At this pace: " + crossings.join(" ");
-    $("#pf-conf").textContent = `Based on ${fmtN(d.total)} screenings (${fmtN(atRisk)} at moderate or high risk) over ${activeWeeks} week(s). It assumes the same pace every year for the whole projection, so it ignores growth, population change, and treatment. These are people who chose to use this site, not all CKD cases in the Philippines. The Caution, Warning, and At risk levels are set by this project for illustration.`;
   }
 
-  onEnter.forecasting = function () {
-    renderForecast();
-    renderPopForecast();
-  };
+  onEnter.feedback = loadFeedbackSummary;
 
   /* ---------------- Referral ---------------- */
   function buildSummary() {

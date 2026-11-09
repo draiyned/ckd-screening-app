@@ -16,25 +16,42 @@ router = APIRouter()
 
 WEEKS = 8
 
+AGE_GROUPS = [
+    ("u30", "Under 30", 0, 29),
+    ("30_44", "30 to 44", 30, 44),
+    ("45_59", "45 to 59", 45, 59),
+    ("60p", "60 and over", 60, 200),
+]
+
 
 def week_start(d: date) -> date:
     return d - timedelta(days=d.weekday())
+
+
+def age_key(age):
+    try:
+        a = float(age)
+    except (TypeError, ValueError):
+        return "unknown"
+    for key, _label, lo, hi in AGE_GROUPS:
+        if lo <= a <= hi:
+            return key
+    return "unknown"
 
 
 @router.get("/stats", dependencies=[Depends(limit("stats", 60, 60))])
 def stats():
     try:
         client = get_client()
-        try:
-            rows = (
-                client.table("assessments")
-                .select("risk_level,created_at")
-                .limit(5000)
-                .execute()
-                .data
-            )
-        except Exception:
-            # Table has no created_at column. Still count risk levels.
+        rows = None
+        # Try the richest query first. Fall back if a column is missing.
+        for cols in ("risk_level,created_at,age", "risk_level,created_at", "risk_level"):
+            try:
+                rows = client.table("assessments").select(cols).limit(5000).execute().data
+                break
+            except Exception:
+                rows = None
+        if rows is None:
             rows = client.table("assessments").select("risk_level").limit(5000).execute().data
 
         appointments = client.table("appointments").select("id").limit(5000).execute().data
@@ -46,6 +63,13 @@ def stats():
         )
 
     by_risk = Counter(r.get("risk_level") for r in rows)
+
+    by_age = {key: {"low": 0, "moderate": 0, "high": 0} for key, *_ in AGE_GROUPS}
+    by_age["unknown"] = {"low": 0, "moderate": 0, "high": 0}
+    for r in rows:
+        level = r.get("risk_level")
+        if level in ("low", "moderate", "high"):
+            by_age[age_key(r.get("age"))][level] += 1
 
     this_week = week_start(date.today())
     starts = [this_week - timedelta(weeks=i) for i in range(WEEKS - 1, -1, -1)]
@@ -70,6 +94,8 @@ def stats():
             "moderate": by_risk.get("moderate", 0),
             "high": by_risk.get("high", 0),
         },
+        "by_age": by_age,
+        "age_labels": {key: label for key, label, *_ in AGE_GROUPS},
         "appointments": len(appointments),
         "weekly": [{"week": s.isoformat(), "count": c} for s, c in weekly_counts.items()],
     }

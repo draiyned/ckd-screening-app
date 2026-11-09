@@ -496,3 +496,28 @@ td .x { background: none; border: 0; color: var(--high); cursor: pointer; font-s
 .pick-list button:hover, .pick-list button:focus-visible { border-color: #c53030; }
 .chosen { font-weight: 600; margin: 8px 0; }
 #partner-more { margin-top: 12px; }
+
+.pie-age0 { fill: #2b6cb0; background: #2b6cb0; }
+.pie-age1 { fill: #6b46c1; background: #6b46c1; }
+.pie-age2 { fill: #0e7490; background: #0e7490; }
+.pie-age3 { fill: #4a5568; background: #4a5568; }
+.pie-age4 { fill: #a0aec0; background: #a0aec0; }
+.scale-legend { background: #fdf4f4; border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; font-size: 14px; }
+.fb-sec { border: 0; padding: 0; margin: 18px 0 0; }
+.fb-sec legend { font-weight: 700; font-size: 17px; margin-bottom: 8px; color: #7a1a24; }
+.fb-row { padding: 12px 10px; border-bottom: 1px solid var(--border); border-radius: 8px; }
+.fb-row.missing { outline: 2px solid #e53e3e; outline-offset: -2px; }
+.fb-q { margin: 0 0 8px; }
+.fb-opts { display: flex; gap: 10px; flex-wrap: wrap; }
+.fb-opt { display: inline-flex; align-items: center; gap: 6px; min-width: 56px; min-height: 44px; padding: 0 12px; border: 1px solid var(--border); border-radius: 10px; cursor: pointer; background: #fff; }
+.fb-opt input { margin: 0; width: 18px; height: 18px; accent-color: #c53030; }
+.fb-opt:has(input:checked) { border-color: #c53030; background: #fff1f1; font-weight: 700; }
+#feedback-form textarea { width: 100%; font: inherit; padding: 10px 12px; border: 1px solid var(--border); border-radius: 10px; margin-top: 6px; }
+#feedback-form label { display: block; margin-top: 18px; }
+#fb-submit { margin-top: 14px; }
+.fb-sum-head { display: flex; justify-content: space-between; gap: 12px; margin-top: 16px; flex-wrap: wrap; }
+.fb-bar { height: 10px; background: #f3dede; border-radius: 6px; margin: 6px 0; overflow: hidden; }
+.fb-bar > div { height: 100%; background: #c53030; }
+#fb-summary details { margin: 6px 0 4px; font-size: 14px; }
+#fb-summary summary { cursor: pointer; color: #7a1a24; }
+.fb-item { display: flex; justify-content: space-between; gap: 12px; padding: 6px 0; border-bottom: 1px dashed var(--border); }

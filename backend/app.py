@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from routes import assessment, appointments, chat, stats
+from routes import assessment, appointments, chat, stats, feedback
 
 # The interactive docs pages are switched off so visitors do not get a map of the API.
 app = FastAPI(
@@ -35,6 +35,7 @@ app.include_router(assessment.router, prefix="/api")
 app.include_router(appointments.router, prefix="/api")
 app.include_router(chat.router, prefix="/api")
 app.include_router(stats.router, prefix="/api")
+app.include_router(feedback.router, prefix="/api")
 
 
 @app.get("/")
