@@ -96,8 +96,8 @@ assessmentForm.addEventListener("submit", async (e) => {
     return;
   }
   const ageNum = Number(assessmentForm.elements["age"].value);
-  if (!assessmentForm.elements["age"].value || !Number.isInteger(ageNum) || ageNum < 16 || ageNum > 25) {
-    showFormError("This screening is for ages 16 to 25. Please enter a whole number from 16 to 25.");
+  if (!assessmentForm.elements["age"].value || !Number.isInteger(ageNum) || ageNum < 16 || ageNum > 30) {
+    showFormError("This screening is for ages 16 to 30. Please enter a whole number from 16 to 30.");
     return;
   }
   const bpEl = assessmentForm.elements["bp"];

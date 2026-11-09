@@ -269,7 +269,7 @@
     }
   }
 
-  const AGE_ORDER = ["16_18", "19_21", "22_25", "unknown"];
+  const AGE_ORDER = ["16_18", "19_21", "22_25", "26_30", "unknown"];
   const pct = (n, t) => (t ? Math.round((n / t) * 100) : 0);
 
   function renderAge(d) {
