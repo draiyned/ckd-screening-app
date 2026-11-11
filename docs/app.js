@@ -193,10 +193,10 @@
   }
 
   /* items: [{key, label, count}]. Draws a pie with a percentage on each slice and a legend. */
-  function pieChart(box, items, aria) {
+  function pieChart(box, items, aria, emptyMsg) {
     box.innerHTML = "";
     const total = items.reduce((s, i) => s + i.count, 0);
-    if (!total) return emptyChart(box, "No screenings yet.");
+    if (!total) return emptyChart(box, emptyMsg || "No screenings yet.");
 
     const C = 100, R = 90;
     const shown = items.filter((i) => i.count > 0);
@@ -298,7 +298,7 @@
     list.innerHTML = "";
     const t = d.total;
     if (!t) {
-      list.appendChild(el("li", "No screenings yet."));
+      list.appendChild(el("li", emptyMsg || "No screenings yet."));
       $("#dash-summary-note").textContent = "";
       return;
     }
@@ -758,14 +758,12 @@
       const overall = d.sections.reduce((s, x) => s + x.mean, 0) / d.sections.length;
       count.textContent = `${d.count} response${d.count === 1 ? "" : "s"}. Overall average ${overall.toFixed(2)} (${interpret(overall)}).`;
 
-      const legend = el("div", null, "fb-legend");
-      FB_SCORES.forEach((sc) => {
-        const it = el("span");
-        it.appendChild(el("i", null, "seg s" + sc.v));
-        it.appendChild(document.createTextNode(`${sc.v} ${sc.label}`));
-        legend.appendChild(it);
-      });
-      box.appendChild(legend);
+      const all = [0, 0, 0, 0, 0];
+      d.sections.forEach((sec) => (sec.dist || []).forEach((c) => c.forEach((n, k) => { all[k] += n; })));
+      box.appendChild(el("h3", "All answers combined", "fb-all-title"));
+      const allBox = el("div", null, "fb-pie fb-pie-all");
+      pieChart(allBox, FB_SCORES.map((sc, k) => ({ key: "fb" + sc.v, label: `${sc.v} ${sc.label}`, count: all[k] })), "All feedback answers");
+      box.appendChild(allBox);
 
       d.sections.forEach((s, si) => {
         const head = el("div", null, "fb-sum-head");
@@ -778,7 +776,9 @@
           const agree = counts[3] + counts[4];
           const r = el("div", null, "fb-res");
           r.appendChild(el("p", `${i + 1}. ${FB_SECTIONS[si].items[i]}`, "fb-res-q"));
-          r.appendChild(distBar(counts));
+          const pbox = el("div", null, "fb-pie");
+          pieChart(pbox, FB_SCORES.map((sc, k) => ({ key: "fb" + sc.v, label: `${sc.v} ${sc.label}`, count: counts[k] })), `Answers to statement ${i + 1}`);
+          r.appendChild(pbox);
           const meta = el("div", null, "fb-res-meta");
           meta.appendChild(el("span", `Average ${m.toFixed(2)}`));
           meta.appendChild(el("span", `Agree or strongly agree: ${pct(agree, total)}%`));

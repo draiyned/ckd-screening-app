@@ -541,3 +541,13 @@ td .x { background: none; border: 0; color: var(--high); cursor: pointer; font-s
 .seg.s4 { background: #48a46f; }
 .seg.s5 { background: #2f855a; }
 .fb-res-meta { display: flex; flex-wrap: wrap; gap: 4px 16px; font-size: 13px; color: var(--muted); margin-top: 6px; }
+
+.pie-fb1 { fill: #c53030; background: #c53030; }
+.pie-fb2 { fill: #dd6b20; background: #dd6b20; }
+.pie-fb3 { fill: #a0aec0; background: #a0aec0; }
+.pie-fb4 { fill: #48a46f; background: #48a46f; }
+.pie-fb5 { fill: #2f855a; background: #2f855a; }
+.fb-pie .pie { width: 150px; flex: none; }
+.fb-pie-all .pie { width: 190px; }
+.fb-pie .pie-legend { gap: 6px; font-size: 14px; min-width: 200px; flex: 1; }
+.fb-all-title { margin: 16px 0 4px; color: #7a1a24; }
