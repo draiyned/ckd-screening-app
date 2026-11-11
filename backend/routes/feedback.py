@@ -43,7 +43,7 @@ def submit_feedback(payload: FeedbackRequest):
         print("feedback not saved:", type(e).__name__, str(e)[:200])
         raise HTTPException(
             status_code=503,
-            detail="Could not save your feedback right now. Please try again later.",
+            detail=f"Could not save your feedback right now. {type(e).__name__}: {str(e)[:120]}",
         )
     return {"message": "Thank you. Your feedback was saved."}
 
@@ -54,9 +54,13 @@ def feedback_summary():
         rows = get_client().table("feedback").select("answers").limit(5000).execute().data
     except Exception as e:
         print("feedback summary error:", type(e).__name__, str(e)[:200])
-        raise HTTPException(status_code=503, detail="Results are not available right now.")
+        raise HTTPException(
+            status_code=503,
+            detail=f"Results are not available right now. {type(e).__name__}: {str(e)[:120]}",
+        )
 
     sums = [[0.0] * n for n in SECTION_SIZES]
+    dist = [[[0] * 5 for _ in range(n)] for n in SECTION_SIZES]  # dist[section][item][score - 1]
     count = 0
     for r in rows:
         a = r.get("answers")
@@ -68,10 +72,11 @@ def feedback_summary():
         for si, section in enumerate(a):
             for i, v in enumerate(section):
                 sums[si][i] += v
+                dist[si][i][v - 1] += 1
 
     sections = []
     for si, size in enumerate(SECTION_SIZES):
         items = [round(sums[si][i] / count, 2) if count else None for i in range(size)]
         mean = round(sum(items) / size, 2) if count else None
-        sections.append({"mean": mean, "items": items})
+        sections.append({"mean": mean, "items": items, "dist": dist[si]})
     return {"count": count, "sections": sections}

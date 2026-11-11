@@ -269,7 +269,7 @@
     }
   }
 
-  const AGE_ORDER = ["16_18", "19_21", "22_25", "26_30", "unknown"];
+  const AGE_ORDER = ["16_18", "19_21", "22_25", "26p", "unknown"];
   const pct = (n, t) => (t ? Math.round((n / t) * 100) : 0);
 
   function renderAge(d) {
@@ -630,6 +630,10 @@
           opts.appendChild(lab);
         });
         row.appendChild(opts);
+        const ends = el("div", null, "fb-ends");
+        ends.appendChild(el("span", "Strongly agree"));
+        ends.appendChild(el("span", "Strongly disagree"));
+        row.appendChild(ends);
         set.appendChild(row);
       });
       box.appendChild(set);
@@ -709,6 +713,30 @@
     return "Strongly disagree";
   }
 
+  const FB_SCORES = [
+    { v: 1, label: "Strongly disagree" },
+    { v: 2, label: "Disagree" },
+    { v: 3, label: "Neutral" },
+    { v: 4, label: "Agree" },
+    { v: 5, label: "Strongly agree" },
+  ];
+
+  function distBar(counts) {
+    const total = counts.reduce((x, y) => x + y, 0);
+    const bar = el("div", null, "fb-stack");
+    bar.setAttribute("role", "img");
+    bar.setAttribute("aria-label", FB_SCORES.map((sc, i) => `${sc.label} ${counts[i]}`).join(", "));
+    FB_SCORES.forEach((sc, i) => {
+      if (!counts[i]) return;
+      const share = (counts[i] / total) * 100;
+      const seg = el("span", share >= 12 ? Math.round(share) + "%" : "", "seg s" + sc.v);
+      seg.style.width = share + "%";
+      seg.title = `${sc.label}: ${counts[i]} (${Math.round(share)}%)`;
+      bar.appendChild(seg);
+    });
+    return bar;
+  }
+
   async function loadFeedbackSummary() {
     const box = $("#fb-summary");
     const count = $("#fb-count");
@@ -716,7 +744,11 @@
     const timer = setTimeout(() => ctrl.abort(), 20000);
     try {
       const res = await fetch(`${API}/feedback/summary`, { signal: ctrl.signal });
-      if (!res.ok) throw new Error("HTTP " + res.status);
+      if (!res.ok) {
+        let detail = "";
+        try { detail = (await res.json()).detail || ""; } catch (e2) { /* not JSON */ }
+        throw new Error(`Error ${res.status}${detail ? ": " + String(detail).slice(0, 160) : ""}`);
+      }
       const d = await res.json();
       box.innerHTML = "";
       if (!d.count) {
@@ -725,28 +757,38 @@
       }
       const overall = d.sections.reduce((s, x) => s + x.mean, 0) / d.sections.length;
       count.textContent = `${d.count} response${d.count === 1 ? "" : "s"}. Overall average ${overall.toFixed(2)} (${interpret(overall)}).`;
+
+      const legend = el("div", null, "fb-legend");
+      FB_SCORES.forEach((sc) => {
+        const it = el("span");
+        it.appendChild(el("i", null, "seg s" + sc.v));
+        it.appendChild(document.createTextNode(`${sc.v} ${sc.label}`));
+        legend.appendChild(it);
+      });
+      box.appendChild(legend);
+
       d.sections.forEach((s, si) => {
         const head = el("div", null, "fb-sum-head");
-        head.appendChild(el("strong", FB_SECTIONS[si].title));
-        head.appendChild(el("span", `${s.mean.toFixed(2)} ${interpret(s.mean)}`));
+        head.appendChild(el("strong", `${si + 1}. ${FB_SECTIONS[si].title}`));
+        head.appendChild(el("span", `Average ${s.mean.toFixed(2)} (${interpret(s.mean)})`));
         box.appendChild(head);
-        const track = el("div", null, "fb-bar");
-        const fill = el("div");
-        fill.style.width = (s.mean / 5) * 100 + "%";
-        track.appendChild(fill);
-        box.appendChild(track);
-        const det = document.createElement("details");
-        det.appendChild(el("summary", "Each statement"));
         s.items.forEach((m, i) => {
-          const r = el("div", null, "fb-item");
-          r.appendChild(el("span", `${i + 1}. ${FB_SECTIONS[si].items[i]}`));
-          r.appendChild(el("strong", m.toFixed(2)));
-          det.appendChild(r);
+          const counts = (s.dist && s.dist[i]) || [0, 0, 0, 0, 0];
+          const total = counts.reduce((x, y) => x + y, 0);
+          const agree = counts[3] + counts[4];
+          const r = el("div", null, "fb-res");
+          r.appendChild(el("p", `${i + 1}. ${FB_SECTIONS[si].items[i]}`, "fb-res-q"));
+          r.appendChild(distBar(counts));
+          const meta = el("div", null, "fb-res-meta");
+          meta.appendChild(el("span", `Average ${m.toFixed(2)}`));
+          meta.appendChild(el("span", `Agree or strongly agree: ${pct(agree, total)}%`));
+          meta.appendChild(el("span", `Counts 5 to 1: ${counts.slice().reverse().join(" / ")}`));
+          r.appendChild(meta);
+          box.appendChild(r);
         });
-        box.appendChild(det);
       });
     } catch (err) {
-      count.textContent = "Results are not available right now.";
+      count.textContent = "Results are not available right now. " + (err.name === "AbortError" ? "(The server took too long.)" : "(" + err.message + ")");
       console.error(err);
     } finally {
       clearTimeout(timer);
